@@ -263,7 +263,7 @@ class Testbed():
             if "collision" in self._errors:
                 print('\t \033[1;32;40m Simulation had {0} {1}  \033[0m \n'.format(self._errors["collision"], self._errors["collision_string"]))
             if "actuator" in self._errors:
-                print('\t \033[1;32;40m Simulation had {0} {1}  \033[0m Simulation had {0} {1}'.format(self._errors["actuator"], self._errors["actuator_string"]))
+                print('\t \033[1;32;40m Simulation had {0} {1}  \033[0m Simulation had {0} {1} \n'.format(self._errors["actuator"], self._errors["actuator_string"]))
         else:
             print('\033[1;32;40m No errors in your simulation! Acceptance of your experiment is likely!   \033[0m ')
 
