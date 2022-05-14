@@ -23,7 +23,7 @@ class Plotlab():
         assert isinstance(show_figure,bool), "The display figure window argument (show_figure) provided to create the Robotarium object must be boolean type. Recieved type %r." % type(show_figure).__name__
 
         # Check user input ranges/sizes
-        assert (number_of_robots >= 0 and number_of_robots <= 15), "Requested %r robots to be used when creating the Robotarium object. The deployed number of robots must be between 0 and 50." % number_of_robots
+        assert (number_of_robots >= 0 and number_of_robots <= 50), "Requested %r robots to be used when creating the Robotarium object. The deployed number of robots must be between 0 and 50." % number_of_robots
         if (initial_conditions.size > 0):
             assert initial_conditions.shape == (3,number_of_robots), "Initial conditions provided when creating the Robotarium object must of size 3xN, where N is the number of robots used. Expected a 3 x %r array but recieved a %r x %r array."   % (number_of_robots, initial_conditions.shape[0], initial_conditions.shape[1])
 
@@ -53,7 +53,7 @@ class Plotlab():
         # self.heigth = 70.71
         self.robot_diameter = self.base_length*np.sqrt(2)
         self.wheel_distance = self.base_length*0.4
-        self.color_robot = ['b', 'r', 'g', 'c', 'm', 'y', 'blue', 'orange', 'brown', 'purple']
+        self.color_robot = ['b', 'r', 'g', 'c', 'm', 'y', 'blue', 'orange', 'brown', 'purple', 'indigo', 'royalblue', 'pink', 'olive', 'green', 'lime', 'darkviolet', 'gold', 'silver', 'gray']
 
         # self.max_linear_velocity = 0.2
         # self.max_angular_velocity = 2 * (self.wheel_radius / self.robot_diameter) * (

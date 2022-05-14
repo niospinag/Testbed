@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
-# import rps.utilities.misc as misc
+import utilities.misc as misc
 
 # RobotariumABC: This is an interface for the Robotarium class that
 # ensures the simulator and the robots match up properly.  
@@ -16,14 +16,14 @@ import matplotlib.patches as patches
 
 class Testbed():
 
-    def __init__(self, number_of_robots=-1, show_figure=True, sim_in_real_time=True, initial_conditions=np.array([]), simulation= True):
+    def __init__(self, number_of_robots=-1, show_figure=True, sim_in_real_time=True, initial_conditions=np.array([])):
 
         #Check user input types
         assert isinstance(number_of_robots,int), "The number of robots used argument (number_of_robots) provided to create the Robotarium object must be an integer type. Recieved type %r." % type(number_of_robots).__name__
         assert isinstance(initial_conditions,np.ndarray), "The initial conditions array argument (initial_conditions) provided to create the Robotarium object must be a numpy ndarray. Recieved type %r." % type(initial_conditions).__name__
         assert isinstance(show_figure,bool), "The display figure window argument (show_figure) provided to create the Robotarium object must be boolean type. Recieved type %r." % type(show_figure).__name__
         assert isinstance(sim_in_real_time,bool), "The simulation running at 0.033s per loop (sim_real_time) provided to create the Robotarium object must be boolean type. Recieved type %r." % type(sim_in_real_time).__name__
-        assert isinstance(simulation,bool), "true simulation shows a virtual implementation of the current experiment, false simulation implement the experiment in the real life %r." % type(simulation).__name__
+        # assert isinstance(simulation,bool), "true simulation shows a virtual implementation of the current experiment, false simulation implement the experiment in the real life %r." % type(simulation).__name__
         
         #Check user input ranges/sizes
         assert (number_of_robots >= 0 and number_of_robots <= 50), "Requested %r robots to be used when creating the Robotarium object. The deployed number of robots must be between 0 and 50." % number_of_robots 
@@ -34,43 +34,42 @@ class Testbed():
         self.number_of_robots = number_of_robots
         self.show_figure = show_figure
         self.initial_conditions = initial_conditions
-        self.simulation = simulation
 
         # Boundary stuff -> lower left point / width / height
         self.boundaries = [-200, -150, 200, 150] # [-x -y x y]<===== check the dimentions of the testbed
 
-        self.file_path = None
-        self.current_file_size = 0
+        # self.file_path = None
+        # self.current_file_size = 0
 
         # Constants
         self.time_step = 0.033
-        self.robot_diameter = 20  #<===== check
-        self.wheel_radius = 3  #<===== check
-        self.base_length = 11  #<===== check
-        self.max_linear_velocity = 20  #<===== check
-        self.max_angular_velocity = 2*(self.wheel_radius/self.robot_diameter)*(self.max_linear_velocity/self.wheel_radius)  #<===== check
-        self.max_wheel_velocity = self.max_linear_velocity/self.wheel_radius  #<===== check
+        self.robot_diameter = 20  
+        self.wheel_radius = 3  
+        self.base_length = 11  
+        self.max_linear_velocity = 20
+        self.max_angular_velocity = 2*(self.wheel_radius/self.robot_diameter)*(self.max_linear_velocity/self.wheel_radius) 
+        self.max_wheel_velocity = self.max_linear_velocity/self.wheel_radius  
 
         self.robot_radius = self.robot_diameter/2
 
         self.velocities = np.zeros((2, number_of_robots))
         self.poses = self.initial_conditions
-        # if self.initial_conditions.size == 0:
-        #     self.poses = misc.generate_initial_conditions(self.number_of_robots, spacing=0.2, width=2.5, height=1.5)
+        if self.initial_conditions.size == 0:
+            self.poses = misc.generate_initial_conditions(self.number_of_robots, spacing=0.2, width=2.5, height=1.5)
         
-        self.left_led_commands = []
-        self.right_led_commands = []
+        # self.left_led_commands = []
+        # self.right_led_commands = []
 
         self.visual = plb.Plotlab(number_of_robots=self.number_of_robots, show_figure=True, initial_conditions=self.initial_conditions, xf_pos = [], yf_pos= [])
 
         # Visualization
-        self.figure = []
-        self.axes = []
-        self.left_led_patches = []
-        self.right_led_patches = []
-        self.chassis_patches = []
-        self.right_wheel_patches = []
-        self.left_wheel_patches = []
+        # self.figure = []
+        # self.axes = []
+        # self.left_led_patches = []
+        # self.right_led_patches = []
+        # self.chassis_patches = []
+        # self.right_wheel_patches = []
+        # self.left_wheel_patches = []
 
         # if(self.show_figure):
         #     self.figure, self.axes = plt.subplots()
@@ -266,33 +265,4 @@ class Testbed():
         # update graphics
         self.visual.step(self.poses, [] , [])
 
-        # # Update graphics
-        # if(self.show_figure):
-        #     if(self.sim_in_real_time):
-        #         t = time.time()
-        #         while(t - self.previous_render_time < self.time_step):
-        #             t=time.time()
-        #         self.previous_render_time = t
-
-        #     for i in range(self.number_of_robots):
-        #         self.chassis_patches[i].center = self.poses[:2, i]
-        #         self.chassis_patches[i].orientation = self.poses[2, i] + math.pi/4
-
-        #         self.right_wheel_patches[i].center = self.poses[:2, i]+self.robot_radius*np.array((np.cos(self.poses[2, i]+math.pi/2), np.sin(self.poses[2, i]+math.pi/2)))+\
-        #                                 0.04*np.array((-np.sin(self.poses[2, i]+math.pi/2), np.cos(self.poses[2, i]+math.pi/2)))
-        #         self.right_wheel_patches[i].orientation = self.poses[2, i] + math.pi/4
-
-        #         self.left_wheel_patches[i].center = self.poses[:2, i]+self.robot_radius*np.array((np.cos(self.poses[2, i]-math.pi/2), np.sin(self.poses[2, i]-math.pi/2)))+\
-        #                                 0.04*np.array((-np.sin(self.poses[2, i]+math.pi/2), np.cos(self.poses[2, i]+math.pi/2)))
-        #         self.left_wheel_patches[i].orientation = self.poses[2,i] + math.pi/4
-                
-        #         self.right_led_patches[i].center = self.poses[:2, i]+0.75*self.robot_radius*np.array((np.cos(self.poses[2,i]), np.sin(self.poses[2,i])))-\
-        #                         0.04*np.array((-np.sin(self.poses[2, i]), np.cos(self.poses[2, i])))
-        #         self.left_led_patches[i].center = self.poses[:2, i]+0.75*self.robot_radius*np.array((np.cos(self.poses[2,i]), np.sin(self.poses[2,i])))-\
-        #                         0.015*np.array((-np.sin(self.poses[2, i]), np.cos(self.poses[2, i])))
-
-        #     self.figure.canvas.draw_idle()
-        #     self.figure.canvas.flush_events()
-        #     print('iteration')
-        #     print(self.poses)
 

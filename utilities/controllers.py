@@ -1,7 +1,7 @@
 import numpy as np
-from rps.utilities.transformations import *
+from utilities.transformations import *
 
-def create_si_position_controller(x_velocity_gain=1, y_velocity_gain=1, velocity_magnitude_limit=0.15):
+def create_si_position_controller(x_velocity_gain=10, y_velocity_gain=10, velocity_magnitude_limit=0.15):
     """Creates a position controller for single integrators.  Drives a single integrator to a point
     using a proportional controller.
 
@@ -39,7 +39,7 @@ def create_si_position_controller(x_velocity_gain=1, y_velocity_gain=1, velocity
         assert isinstance(positions, np.ndarray), "In the si_position_controller function created by the create_si_position_controller function, the robot goal points (positions) must be a numpy array. Recieved type %r." % type(positions).__name__
 
         #Check user input ranges/sizes
-        assert xi.shape[0] == 2, "In the si_position_controller function created by the create_si_position_controller function, the dimension of the single-integrator robot states (xi) must be 2 ([x;y]). Recieved dimension %r." % xi.shape[0]
+        assert xi.shape[0] == 2, "\n \033[1;33;40m In the si_position_controller function created by the create_si_position_controller function, the dimension of the single-integrator robot states (xi) must be 2 ([x;y]). Recieved dimension %r.     \033[0m  \n" % xi.shape[0]
         assert positions.shape[0] == 2, "In the si_position_controller function created by the create_si_position_controller function, the dimension of the robot goal points (positions) must be 2 ([x_goal;y_goal]). Recieved dimension %r." % positions.shape[0]
         assert xi.shape[1] == positions.shape[1], "In the si_position_controller function created by the create_si_position_controller function, the number of single-integrator robot states (xi) must be equal to the number of robot goal points (positions). Recieved a single integrator current position input array of size %r x %r and desired position array of size %r x %r." % (xi.shape[0], xi.shape[1], positions.shape[0], positions.shape[1])
 

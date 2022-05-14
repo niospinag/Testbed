@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+import math
 
 def generate_initial_conditions(N, spacing=30, width=200, height=150):
     """Generates random initial conditions in an area of the specified
@@ -126,3 +126,16 @@ def determine_font_size(robotarium_instance, font_height_meters):
 
 	# Determine the font size in points so it fits the window.
 	return (font_ratio*font_height_meters)
+
+def angle_correction(corners):
+    P = corners
+    Px1 = P[0, 0, 0]
+    Py1 = P[0, 0, 1]
+
+    Px4 = P[0, 3, 0]
+    Py4 = P[0, 3, 1]
+    # we convert the position of the market's corners corners
+
+    angle = math.atan2(Py4 - Py1, Px1 - Px4)
+
+    return angle
