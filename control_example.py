@@ -17,7 +17,7 @@ import numpy as np
 import time
 
 # Instantiate Robotarium object
-N = 20
+N = 7
 # initial_conditions = np.array(np.mat('1 0.5 -0.5 0 0.28; 0.8 -0.3 -0.75 0.1 0.34; 0 0 0 0 0'))
 initial_conditions = misc.generate_initial_conditions(N)
 r = Testbed(number_of_robots=N, show_figure=True, initial_conditions=initial_conditions, sim_in_real_time=False)

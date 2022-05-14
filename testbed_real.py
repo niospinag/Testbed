@@ -94,7 +94,7 @@ class Testbed():
         self.detected = []
 
         # initialize serial cominication
-        self.esp8266 = serial.Serial("/dev/ttyUSB0", 115200)
+        self.esp8266 = serial.Serial("COM4", 115200)
 
 
 
@@ -292,12 +292,14 @@ class Testbed():
         r, g, b = (0, 0, 10)
         for id in range(self.number_of_robots):
             # dataControl += "%0.0f; %0.1f; %0.1f; %0.1f; %0.1f; %0.1f" % (id, 1 * self.velocities[0,id], 1 * self.velocities[1,id], r, g, b) + '\n'
-            dataControl += "%0.0f; %0.1f; %0.1f; %0.1f; %0.1f; %0.1f" % (id, 1 * 200, 1 * 2, r, g, b) + '\n'
+            dataControl += "%0.0f; %0.0f; %0.0f; %0.0f; %0.0f; %0.0f;" % (id, 1 * 200, 1 * 2, r, g, b) + '\n'
         
+        # dataControl += "%0.0f; %0.0f; %0.0f; %0.0f; %0.0f; %0.0f;" % (nm, 1*vOutPut[nm-1],  1*wOutPut[nm-1], red, green, blue) + '\n'
+
         dataControl += 'xxF'
         datos = dataControl.encode("utf-8")
         self.esp8266.write(datos)
-        print(dataControl)
+        print(datos)
 
         # # Update dynamics of agents
         # self.poses[0, :] = self.poses[0, :] + self.time_step*np.cos(self.poses[2,:])*self.velocities[0, :]
