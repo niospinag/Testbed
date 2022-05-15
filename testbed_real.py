@@ -20,22 +20,23 @@ class Testbed():
     def __init__(self, number_of_robots=-1, show_figure=True, sim_in_real_time=True, initial_conditions=np.array([]), simulation= True):
 
         #Check user input types
-        assert isinstance(number_of_robots,int), "The number of robots used argument (number_of_robots) provided to create the Robotarium object must be an integer type. Recieved type %r." % type(number_of_robots).__name__
-        assert isinstance(initial_conditions,np.ndarray), "The initial conditions array argument (initial_conditions) provided to create the Robotarium object must be a numpy ndarray. Recieved type %r." % type(initial_conditions).__name__
-        assert isinstance(show_figure,bool), "The display figure window argument (show_figure) provided to create the Robotarium object must be boolean type. Recieved type %r." % type(show_figure).__name__
-        assert isinstance(sim_in_real_time,bool), "The simulation running at 0.033s per loop (sim_real_time) provided to create the Robotarium object must be boolean type. Recieved type %r." % type(sim_in_real_time).__name__
+        assert isinstance(number_of_robots,int), "The number of robots used argument (number_of_robots) provided to create the Testbed object must be an integer type. Recieved type %r." % type(number_of_robots).__name__
+        assert isinstance(initial_conditions,np.ndarray), "The initial conditions array argument (initial_conditions) provided to create the Testbed object must be a numpy ndarray. Recieved type %r." % type(initial_conditions).__name__
+        assert isinstance(show_figure,bool), "The display figure window argument (show_figure) provided to create the Testbed object must be boolean type. Recieved type %r." % type(show_figure).__name__
+        assert isinstance(sim_in_real_time,bool), "The simulation running at 0.033s per loop (sim_real_time) provided to create the Testbed object must be boolean type. Recieved type %r." % type(sim_in_real_time).__name__
         assert isinstance(simulation,bool), "true simulation shows a virtual implementation of the current experiment, false simulation implement the experiment in the real life %r." % type(simulation).__name__
         
         #Check user input ranges/sizes
-        assert (number_of_robots >= 0 and number_of_robots <= 50), "Requested %r robots to be used when creating the Robotarium object. The deployed number of robots must be between 0 and 50." % number_of_robots 
+        assert (number_of_robots >= 0 and number_of_robots <= 50), "Requested %r robots to be used when creating the Testbed object. The deployed number of robots must be between 0 and 50." % number_of_robots 
         if (initial_conditions.size > 0):
-            assert initial_conditions.shape == (3, number_of_robots), "Initial conditions provided when creating the Robotarium object must of size 3xN, where N is the number of robots used. Expected a 3 x %r array but recieved a %r x %r array." % (number_of_robots, initial_conditions.shape[0], initial_conditions.shape[1])
+            assert initial_conditions.shape == (3, number_of_robots), "Initial conditions provided when creating the Testbed object must of size 3xN, where N is the number of robots used. Expected a 3 x %r array but recieved a %r x %r array." % (number_of_robots, initial_conditions.shape[0], initial_conditions.shape[1])
 
 
         self.number_of_robots = number_of_robots
         self.show_figure = show_figure
         self.initial_conditions = initial_conditions
         self.simulation = simulation
+        self.goals = np.array([])
 
         # Boundary stuff -> lower left point / width / height
         self.boundaries = [-200, -150, 200, 150] # [-x -y x y]<===== check the dimentions of the testbed
@@ -48,7 +49,7 @@ class Testbed():
         self.robot_diameter = 20  #<===== check
         self.wheel_radius = 3  #<===== check
         self.base_length = 11  #<===== check
-        self.max_linear_velocity = 20  #<===== check
+        self.max_linear_velocity = 100  #<===== check
         self.max_angular_velocity = 2*(self.wheel_radius/self.robot_diameter)*(self.max_linear_velocity/self.wheel_radius)  #<===== check
         self.max_wheel_velocity = self.max_linear_velocity/self.wheel_radius  #<===== check
 
@@ -79,22 +80,21 @@ class Testbed():
         self.HEIGHT = 720 # 720 // 1080  //896  // 576  //360
 
         self.cap = cv2.VideoCapture(0)
+        self.img = None
         self.augDics = cam.loadAugImages("Markers")
         self.marker_size = 10.2  # - [cm]
 
         self.cap.set(cv2.CAP_PROP_EXPOSURE, exposure)
         self.camera_matrix, self.camera_distortion = cam.getCameraMatr("Camera", width=1280, height=720)
-
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.WIDTH)  
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.HEIGHT)  
-
         self.cap.set(cv2.CAP_PROP_FOCUS, 0)
 
         self.position = np.ones((3, 100))
         self.detected = []
-
+        self.d_points = False
         # initialize serial cominication
-        self.esp8266 = serial.Serial("COM4", 115200)
+        self.esp8266 = serial.Serial("/dev/ttyUSB0", 115200)
 
 
 
@@ -205,6 +205,7 @@ class Testbed():
 
         T1 = time.perf_counter()
         secuess, img = self.cap.read()
+        self.img = img
         bboxs, ids = cam.findArucoMarkers(img)
         self.detected = ids
         print(ids)
@@ -238,8 +239,15 @@ class Testbed():
         if key == ord('q'):
             # cv2.destroyAllWindows()
             self.call_at_scripts_end()
-
+        
         cam.draw_axis(img, self.HEIGHT, self.WIDTH, color=(100, 100, 100))
+        
+        if self.d_points:
+            for i in range(self.number_of_robots):
+                # def draw_point(img, position, width, height, color=(0, 200, 0)):
+                print(self.goals[:2,i])
+                cam.draw_point(img, self.goals[:2,i], self.WIDTH, self.HEIGHT , color=(0, 200, 0))
+                # cam.draw_point(img, [0, 0], self.WIDTH, self.HEIGHT , color=(0, 200, 0))
 
         # --- Display the frame
         cv2.imshow("Image", img)
@@ -250,12 +258,12 @@ class Testbed():
     def call_at_scripts_end(self):
         """Call this function at the end of scripts to display potentail errors.  
         Even if you don't want to print the errors, calling this function at the
-        end of your script will enable execution on the Robotarium testbed.
+        end of your script will enable execution on the Testbed testbed.
         """
         
 
         print(' \033[1;32;40m ##### DEBUG OUTPUT #####   \033[0m ')
-        print('\033[1;32;40m Your simulation will take approximately {0} real seconds when deployed on the Robotarium.  \033[0m  \n'.format(math.ceil(self._iterations*0.033)))
+        print('\033[1;32;40m Your simulation will take approximately {0} real seconds when deployed on the Testbed.  \033[0m  \n'.format(math.ceil(self._iterations*0.033)))
 
         if bool(self._errors):
             if "boundary" in self._errors:
@@ -291,8 +299,8 @@ class Testbed():
 
         r, g, b = (0, 0, 10)
         for id in range(self.number_of_robots):
-            # dataControl += "%0.0f; %0.1f; %0.1f; %0.1f; %0.1f; %0.1f" % (id, 1 * self.velocities[0,id], 1 * self.velocities[1,id], r, g, b) + '\n'
-            dataControl += "%0.0f; %0.0f; %0.0f; %0.0f; %0.0f; %0.0f;" % (id, 1 * 200, 1 * 2, r, g, b) + '\n'
+            dataControl += "%0.0f; %0.1f; %0.1f; %0.1f; %0.1f; %0.1f" % (id, 1 * self.velocities[0,id], 1 * self.velocities[1,id], r, g, b) + '\n'
+            # dataControl += "%0.0f; %0.0f; %0.0f; %0.0f; %0.0f; %0.0f;" % (id, 1 * 200, 1 * 2, r, g, b) + '\n'
         
         # dataControl += "%0.0f; %0.0f; %0.0f; %0.0f; %0.0f; %0.0f;" % (nm, 1*vOutPut[nm-1],  1*wOutPut[nm-1], red, green, blue) + '\n'
 
@@ -301,13 +309,12 @@ class Testbed():
         self.esp8266.write(datos)
         print(datos)
 
-        # # Update dynamics of agents
-        # self.poses[0, :] = self.poses[0, :] + self.time_step*np.cos(self.poses[2,:])*self.velocities[0, :]
-        # self.poses[1, :] = self.poses[1, :] + self.time_step*np.sin(self.poses[2,:])*self.velocities[0, :]
-        # self.poses[2, :] = self.poses[2, :] + self.time_step*self.velocities[1, :]
-        # # Ensure angles are wrapped
-        # self.poses[2, :] = np.arctan2(np.sin(self.poses[2, :]), np.cos(self.poses[2, :]))
+        
 
-        # # update graphics
-        # self.visual.step(self.poses, [] , [])
+    def draw_point(self,goals):
+        assert isinstance(goals,np.ndarray), "The Goals array argument provided to show in screen the target must be a numpy ndarray. Recieved type %r." % type(initial_conditions).__name__
+        # assert initial_conditions.shape == (3, number_of_robots), "Initial conditions provided when creating the Testbed object must of size 3xN, where N is the number of robots used. Expected a 3 x %r array but recieved a %r x %r array." % (number_of_robots, initial_conditions.shape[0], initial_conditions.shape[1])
 
+        self.goals = goals
+        self.d_points = True        
+        

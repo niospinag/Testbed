@@ -27,7 +27,7 @@ goal_points = misc.generate_initial_conditions(N)
 print(goal_points)
 print(goal_points.shape)
 # Create unicycle pose controller
-unicycle_pose_controller = ctrl.create_clf_unicycle_position_controller()
+unicycle_pose_controller = ctrl.create_clf_unicycle_position_controller(linear_velocity_gain=20, angular_velocity_gain=1.5)
 
 # Create barrier certificates to avoid collision
 uni_barrier_cert = brct.create_unicycle_barrier_certificate()
@@ -39,33 +39,33 @@ r.step()
 
 # While the number of robots at the required poses is less
 # than N...
-try:
+# try:
+if True:
 # while (np.size(misc.at_pose(x, goal_points)) != N):
     while True:
 
         # Get poses of agents
         x = r.get_poses()
-        # print(x)
+        r.draw_point(goal_points)
         # Create unicycle control inputs
         
         dxu = unicycle_pose_controller(x, goal_points[:2,:])
-        # print(dxu)
-
+        
         # Create safe control inputs (i.e., no collisions)
         # dxu = uni_barrier_cert(dxu, x)
-        # print(dxu)
+
         # Set the velocities
         r.set_velocities(np.arange(N), dxu)
 
         # Iterate the simulation
         r.step()
 
-except Exception as e:
-    #Call at end of script to print debug information and for your script to run on the Robotarium server properly
+# except Exception as e:
+#     #Call at end of script to print debug information and for your script to run on the Robotarium server properly
     
-    print("\033[1;31;40m  Error on line {}   \033[0m  ".format(sys.exc_info()[-1].tb_lineno))
-    print(e)
-    r.call_at_scripts_end()
+#     print("\033[1;31;40m  Error on line {}   \033[0m  ".format(sys.exc_info()[-1].tb_lineno))
+#     print(e)
+#     r.call_at_scripts_end()
 
-finally:
-    r.call_at_scripts_end()
+# finally:
+#     r.call_at_scripts_end()

@@ -265,4 +265,5 @@ class Testbed():
         # update graphics
         self.visual.step(self.poses, [] , [])
 
-
+    def draw_point(self,goals):
+        pass

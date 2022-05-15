@@ -179,6 +179,9 @@ class Plotlab():
             self.figure.canvas.draw_idle()
             self.figure.canvas.flush_events()
 
+    def draw_point(self,goals):
+        pass
+
 
 if __name__ == "__main__":
     import scipy.io as spio
