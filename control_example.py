@@ -1,6 +1,6 @@
 '''this is an example of how to implement the textbed
 '''
-from testbed_real import Testbed
+from testbed_virt import Testbed
 import utilities.misc as misc 
 import utilities.barrier_certificates as brct
 import utilities.controllers as ctrl

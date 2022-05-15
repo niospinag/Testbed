@@ -12,7 +12,7 @@ mpl.rcParams['figure.dpi'] = 200
 # plt.figure(figsize = (8,6), dpi = 80)
 class Plotlab():
     def __init__(self, number_of_robots=1, show_figure=True, initial_conditions=np.array([]), time_step=0.2,
-                 xf_pos=[], yf_pos=[]):
+                 xf_pos=[], yf_pos=[], draw_goals = False):
         # Check user input types
         # if yf_pos is None:
         #     yf_pos = []
@@ -32,6 +32,7 @@ class Plotlab():
         else:
             self.draw_path = False
 
+        self.d_goal = draw_goals
 
 
         self.number_of_robots = number_of_robots
@@ -64,6 +65,7 @@ class Plotlab():
 
         # self.velocities = np.zeros((2, number_of_robots))
         self.poses = self.initial_conditions
+        self.goals = np.array([])
 
         self.left_led_commands = []
         self.right_led_commands = []
@@ -78,6 +80,7 @@ class Plotlab():
         self.left_wheel_patches = []
         self.future_position = []
         self.center_wheel_patches = []
+        self.goal_patches = []
 
         self.x_future_pos = xf_pos
         self.y_future_pos = yf_pos
@@ -113,6 +116,12 @@ class Plotlab():
             
             if self.draw_path:
                 self.axes.add_line(f_pos)
+            
+            if self.d_goal:
+                g = patches.Circle(self.goal[:2, i] , 0.4*self.wheel_radius, facecolor='g')
+                self.axes.add_patch(g)
+                self.goal_patches.append(g)
+            
             self.axes.add_patch(lw)
             self.axes.add_patch(rw)
             self.axes.add_patch(p)
@@ -161,6 +170,13 @@ class Plotlab():
                     self.future_position[i].set_xdata(xf_pos[:,i])
                     self.future_position[i].set_ydata(yf_pos[:,i])
 
+                if self.d_goal:
+                    print(self.goals[:2, i])
+                    # self.goal_patches[i].center = self.goals[:2, i]
+                    # self.goal_patches[i].center = None
+                    self.goal_patches[i].center = self.poses[:2, i] + self.robot_radius * np.array((np.cos(self.poses[2, i] - math.pi / 2), np.sin(self.poses[2, i] - math.pi / 2))) + \
+                                                     self.wheel_distance * np.array((-np.sin(self.poses[2, i] + math.pi / 2), np.cos(self.poses[2, i] + math.pi / 2)))
+
                 self.right_wheel_patches[i].center = self.poses[:2, i] + self.robot_radius * np.array((np.cos(self.poses[2, i] - math.pi / 2), np.sin(self.poses[2, i] - math.pi / 2))) + \
                                                      self.wheel_distance * np.array((-np.sin(self.poses[2, i] + math.pi / 2), np.cos(self.poses[2, i] + math.pi / 2)))
                 self.right_wheel_patches[i].orientation = self.poses[2, i] + math.pi / 4
@@ -179,9 +195,11 @@ class Plotlab():
             self.figure.canvas.draw_idle()
             self.figure.canvas.flush_events()
 
-    def draw_point(self,goals):
-        pass
+    def draw_goal(self,goals):
+        self.d_goal=True
+        self.goals= goals
 
+# ///////////////////////////////////////////////////////////////////////////////////////////
 
 if __name__ == "__main__":
     import scipy.io as spio

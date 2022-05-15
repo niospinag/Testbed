@@ -243,12 +243,10 @@ class Testbed():
         cam.draw_axis(img, self.HEIGHT, self.WIDTH, color=(100, 100, 100))
         
         if self.d_points:
-            for i in range(self.number_of_robots):
-                # def draw_point(img, position, width, height, color=(0, 200, 0)):
+            for i in range(self.number_of_robots): 
                 print(self.goals[:2,i])
                 cam.draw_point(img, self.goals[:2,i], self.WIDTH, self.HEIGHT , color=(0, 200, 0))
-                # cam.draw_point(img, [0, 0], self.WIDTH, self.HEIGHT , color=(0, 200, 0))
-
+               
         # --- Display the frame
         cv2.imshow("Image", img)
 
