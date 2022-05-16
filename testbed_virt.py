@@ -61,7 +61,7 @@ class Testbed():
         # self.right_led_commands = []
 
         self.visual = plb.Plotlab(number_of_robots=self.number_of_robots, show_figure=True, initial_conditions=self.initial_conditions, xf_pos = [], yf_pos= [])
-        self.visual.d_goal = True
+        
         # Visualization
         # self.figure = []
         # self.axes = []
@@ -266,4 +266,4 @@ class Testbed():
         self.visual.step(self.poses, [] , [])
 
     def draw_point(self, goals):
-        self.visual.draw_goal(goals)
+        self.visual.draw_point(goals)

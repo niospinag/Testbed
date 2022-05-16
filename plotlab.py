@@ -171,11 +171,9 @@ class Plotlab():
                     self.future_position[i].set_ydata(yf_pos[:,i])
 
                 if self.d_goal:
-                    print(self.goals[:2, i])
-                    # self.goal_patches[i].center = self.goals[:2, i]
-                    # self.goal_patches[i].center = None
-                    self.goal_patches[i].center = self.poses[:2, i] + self.robot_radius * np.array((np.cos(self.poses[2, i] - math.pi / 2), np.sin(self.poses[2, i] - math.pi / 2))) + \
-                                                     self.wheel_distance * np.array((-np.sin(self.poses[2, i] + math.pi / 2), np.cos(self.poses[2, i] + math.pi / 2)))
+                    # print(self.goals[:2, i])
+                    self.goal_patches[i].center = self.goals[:2, i]
+                    
 
                 self.right_wheel_patches[i].center = self.poses[:2, i] + self.robot_radius * np.array((np.cos(self.poses[2, i] - math.pi / 2), np.sin(self.poses[2, i] - math.pi / 2))) + \
                                                      self.wheel_distance * np.array((-np.sin(self.poses[2, i] + math.pi / 2), np.cos(self.poses[2, i] + math.pi / 2)))
@@ -195,9 +193,16 @@ class Plotlab():
             self.figure.canvas.draw_idle()
             self.figure.canvas.flush_events()
 
-    def draw_goal(self,goals):
-        self.d_goal=True
-        self.goals= goals
+    def draw_point(self,goals):
+        if self.d_goal == False:
+            for i in range(self.number_of_robots):
+                g = patches.Circle(goals[:2, i] , 0.4*self.wheel_radius, facecolor='g')
+                self.axes.add_patch(g)
+                self.goal_patches.append(g)
+
+
+        self.d_goal = True
+        self.goals = goals
 
 # ///////////////////////////////////////////////////////////////////////////////////////////
 

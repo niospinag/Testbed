@@ -1,6 +1,6 @@
 '''this is an example of how to implement the textbed
 '''
-from testbed_virt import Testbed
+from testbed_real import Testbed
 import utilities.misc as misc 
 import utilities.barrier_certificates as brct
 import utilities.controllers as ctrl
@@ -37,16 +37,18 @@ x = r.get_poses()
 
 r.step()
 
+r.draw_point(goal_points)
 # While the number of robots at the required poses is less
 # than N...
 # try:
+
 if True:
 # while (np.size(misc.at_pose(x, goal_points)) != N):
     while True:
 
         # Get poses of agents
         x = r.get_poses()
-        r.draw_point(goal_points)
+        # r.draw_point(goal_points)
         # Create unicycle control inputs
         
         dxu = unicycle_pose_controller(x, goal_points[:2,:])

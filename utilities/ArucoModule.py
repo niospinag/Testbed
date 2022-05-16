@@ -106,6 +106,7 @@ def draw_axis(img, height, width, color=(100, 100, 100)):
     img[int(height / 2 - 0) - 1:int(height / 2 - 0), :] = color
     return img
 
+# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 def main():
     focus = 0

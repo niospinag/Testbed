@@ -49,7 +49,7 @@ class Testbed():
         self.robot_diameter = 20  #<===== check
         self.wheel_radius = 3  #<===== check
         self.base_length = 11  #<===== check
-        self.max_linear_velocity = 100  #<===== check
+        self.max_linear_velocity = 200  #<===== check
         self.max_angular_velocity = 2*(self.wheel_radius/self.robot_diameter)*(self.max_linear_velocity/self.wheel_radius)  #<===== check
         self.max_wheel_velocity = self.max_linear_velocity/self.wheel_radius  #<===== check
 
@@ -244,7 +244,6 @@ class Testbed():
         
         if self.d_points:
             for i in range(self.number_of_robots): 
-                print(self.goals[:2,i])
                 cam.draw_point(img, self.goals[:2,i], self.WIDTH, self.HEIGHT , color=(0, 200, 0))
                
         # --- Display the frame
@@ -306,8 +305,8 @@ class Testbed():
         datos = dataControl.encode("utf-8")
         self.esp8266.write(datos)
         print(datos)
-
         
+
 
     def draw_point(self,goals):
         assert isinstance(goals,np.ndarray), "The Goals array argument provided to show in screen the target must be a numpy ndarray. Recieved type %r." % type(initial_conditions).__name__
