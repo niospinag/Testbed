@@ -84,7 +84,7 @@ def create_single_integrator_barrier_certificate(barrier_gain=100, safety_radius
 
     return f
 
-def create_single_integrator_barrier_certificate_with_boundary(barrier_gain=100, safety_radius=0.17, magnitude_limit=0.2, boundary_points = np.array([-200, 200, -150, 150])):
+def create_single_integrator_barrier_certificate_with_boundary(barrier_gain=100, safety_radius=17, magnitude_limit=2, boundary_points = np.array([-200, 200, -150, 150])):
     """Creates a barrier certificate for a single-integrator system with a rectangular boundary included.  This function
     returns another function for optimization reasons.
 
@@ -173,7 +173,7 @@ def create_single_integrator_barrier_certificate_with_boundary(barrier_gain=100,
 
     return f
 
-def create_single_integrator_barrier_certificate2(barrier_gain=100, unsafe_barrier_gain=1e6, safety_radius=0.17, magnitude_limit=0.2):
+def create_single_integrator_barrier_certificate2(barrier_gain=100, unsafe_barrier_gain=1e6, safety_radius=17, magnitude_limit=2):
     """Creates a barrier certificate for a single-integrator system.  This function
     returns another function for optimization reasons. This function is different from 
     create_single_integrator_barrier_certificate as it changes the barrier gain to a large
@@ -245,7 +245,7 @@ def create_single_integrator_barrier_certificate2(barrier_gain=100, unsafe_barri
 
     return f
 
-def create_unicycle_barrier_certificate(barrier_gain=100, safety_radius=70, projection_distance=5, magnitude_limit=0.2):
+def create_unicycle_barrier_certificate(barrier_gain=100, safety_radius=0.70, projection_distance=5, magnitude_limit=0.2):
     """ Creates a unicycle barrier cetifcate to avoid collisions. Uses the diffeomorphism mapping
     and single integrator implementation. For optimization purposes, this function returns 
     another function.
@@ -298,7 +298,7 @@ def create_unicycle_barrier_certificate(barrier_gain=100, safety_radius=70, proj
 
     return f
 
-def create_unicycle_barrier_certificate_with_boundary(barrier_gain=100, safety_radius=0.12, projection_distance=0.05, magnitude_limit=0.2, boundary_points = np.array([-1.6, 1.6, -1.0, 1.0])):
+def create_unicycle_barrier_certificate_with_boundary(barrier_gain=100, safety_radius=12, projection_distance=5, magnitude_limit=2, boundary_points = np.array([-200, 200, -150, 150])):
     """ Creates a unicycle barrier cetifcate to avoid collisions. Uses the diffeomorphism mapping
     and single integrator implementation. For optimization purposes, this function returns 
     another function.
@@ -351,7 +351,7 @@ def create_unicycle_barrier_certificate_with_boundary(barrier_gain=100, safety_r
 
     return f
 
-def create_unicycle_barrier_certificate2(barrier_gain=500, unsafe_barrier_gain=1e6, safety_radius=0.12, projection_distance=0.05, magnitude_limit=0.2):
+def create_unicycle_barrier_certificate2(barrier_gain=500, unsafe_barrier_gain=1e6, safety_radius=12, projection_distance=5, magnitude_limit=2):
     """ Creates a unicycle barrier cetifcate to avoid collisions. Uses the diffeomorphism mapping
     and single integrator implementation. For optimization purposes, this function returns 
     another function.
@@ -406,8 +406,8 @@ def create_unicycle_barrier_certificate2(barrier_gain=500, unsafe_barrier_gain=1
 
     return f
 
-def create_unicycle_differential_drive_barrier_certificate(max_num_obstacle_points = 100, max_num_robots = 30, disturbance = 5, wheel_vel_limit = 12.5, base_length = 0.105, wheel_radius = 0.016,
-    projection_distance =0.05, barrier_gain = 150, safety_radius = 0.17):
+def create_unicycle_differential_drive_barrier_certificate(max_num_obstacle_points = 100, max_num_robots = 30, disturbance = 5, wheel_vel_limit = 12.5, base_length = 11, wheel_radius = 3,
+    projection_distance = 5, barrier_gain = 150, safety_radius = 17):
     
 
     D = np.matrix([[wheel_radius/2, wheel_radius/2], [-wheel_radius/base_length, wheel_radius/base_length]])
@@ -516,8 +516,8 @@ def create_unicycle_differential_drive_barrier_certificate(max_num_obstacle_poin
 
     return robust_barriers
 
-def create_unicycle_differential_drive_barrier_certificate_with_boundary(max_num_obstacle_points = 100, max_num_robots = 30, disturbance = 5, wheel_vel_limit = 12.5, base_length = 0.105, wheel_radius = 0.016,
-    projection_distance =0.05, barrier_gain = 150, safety_radius = 0.17, boundary_points = np.array([-1.6, 1.6, -1.0, 1.0])):
+def create_unicycle_differential_drive_barrier_certificate_with_boundary(max_num_obstacle_points = 100, max_num_robots = 30, disturbance = 5, wheel_vel_limit = 12.5, base_length = 11, wheel_radius = 3,
+    projection_distance =5, barrier_gain = 150, safety_radius = 17, boundary_points = np.array([-200, 200, -150, 150]) ):
     
 
     D = np.array([[wheel_radius/2, wheel_radius/2], [-wheel_radius/base_length, wheel_radius/base_length]])

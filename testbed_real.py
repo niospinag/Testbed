@@ -9,6 +9,7 @@ import matplotlib.patches as patches
 import serial
 
 import utilities.misc as misc 
+import utilities.controllers as ctrl
 # vision libraries
 import cv2
 import cv2.aruco as aruco
@@ -28,10 +29,7 @@ class Testbed():
         
         #Check user input ranges/sizes
         assert (number_of_robots >= 0 and number_of_robots <= 50), "Requested %r robots to be used when creating the Testbed object. The deployed number of robots must be between 0 and 50." % number_of_robots 
-        if (initial_conditions.size > 0):
-            assert initial_conditions.shape == (3, number_of_robots), "Initial conditions provided when creating the Testbed object must of size 3xN, where N is the number of robots used. Expected a 3 x %r array but recieved a %r x %r array." % (number_of_robots, initial_conditions.shape[0], initial_conditions.shape[1])
-
-
+        
         self.number_of_robots = number_of_robots
         self.show_figure = show_figure
         self.initial_conditions = initial_conditions
@@ -57,24 +55,27 @@ class Testbed():
 
         self.velocities = np.zeros((2, number_of_robots))
         self.poses = self.initial_conditions
-        # if self.initial_conditions.size == 0:
-        #     self.poses = misc.generate_initial_conditions(self.number_of_robots, spacing=0.2, width=2.5, height=1.5)
+        if self.initial_conditions.size == 0:
+            self.poses = self.get_poses()
         
         self.left_led_commands = []
         self.right_led_commands = []
 
+        self.controller = ctrl.create_clf_unicycle_position_controller(10, 1.5)        
+
+
         # self.visual = plb.Plotlab(number_of_robots=self.number_of_robots, show_figure=True, initial_conditions=self.initial_conditions, xf_pos = [], yf_pos= [])
 
-        # Visualization
-        self.figure = []
-        self.axes = []
-        self.left_led_patches = []
-        self.right_led_patches = []
-        self.chassis_patches = []
-        self.right_wheel_patches = []
-        self.left_wheel_patches = []
+        # # Visualization
+        # self.figure = []
+        # self.axes = []
+        # self.left_led_patches = []
+        # self.right_led_patches = []
+        # self.chassis_patches = []
+        # self.right_wheel_patches = []
+        # self.left_wheel_patches = []
 
-        # opencv parameters
+        # opencv parameters ///////////////////////////////////////////////////////
         exposure = -5
         self.WIDTH = 1280 # 1280 // 1920  //1600 //1024 //640
         self.HEIGHT = 720 # 720 // 1080  //896  // 576  //360
@@ -96,6 +97,16 @@ class Testbed():
         # initialize serial cominication
         self.esp8266 = serial.Serial("/dev/ttyUSB0", 115200)
 
+        if (initial_conditions.size > 0):
+            assert initial_conditions.shape == (3, number_of_robots), "Initial conditions provided when creating the Testbed object must of size 3xN, where N is the number of robots used. Expected a 3 x %r array but recieved a %r x %r array." % (number_of_robots, initial_conditions.shape[0], initial_conditions.shape[1])
+            # Move the vehicles to the initial conditions decired 
+            actual_pose = self.get_poses()
+            self.move2target(actual_pose, self.initial_conditions)
+
+        
+        else:
+            initial_conditions=self.get_poses()[:,:number_of_robots]
+            assert initial_conditions.shape == (3, number_of_robots), "Camera does not detect enough vehicles. Please make sure you put the needed agents. Expected %r agents, but recieved %r." % (number_of_robots, initial_conditions.shape[1])
 
 
 #Initialize some rendering variables
@@ -113,7 +124,30 @@ class Testbed():
         self._iterations = 0 
 
 
+    def move2target(self, initial, final):
+        x=initial
+        N = self.number_of_robots
+        print('atpose', misc.at_pose(x, final) )
+        while (np.size(misc.at_pose(x, final) ) != N):
+        
+            # Create safe control inputs (i.e., no collisions)
+            dxu = self.controller(x, final)
 
+            dataControl = str(self.number_of_robots) + '\n'  # numero de marcadores
+            r, g, b = (70, 40, 10)
+            for id in range(self.number_of_robots):
+                dataControl += "%0.0f; %0.1f; %0.1f; %0.1f; %0.1f; %0.1f" % (id+1, 1 * dxu[0,id], 1 * dxu[1,id], r, g, b) + '\n'
+                
+            dataControl += 'xxF'
+            datos = dataControl.encode("utf-8")
+            self.esp8266.write(datos)
+            print(datos)
+
+
+            x=self.get_poses()
+
+            
+        input('Press any key to start the implementation')
 
     def set_velocities(self, ids, velocities):
         # in case of problems ''' sudo chmod 666 /dev/ttyUSB0 '''
@@ -126,6 +160,7 @@ class Testbed():
         # Threshold angular velocities
         idxs = np.where(np.abs(velocities[1, :]) > self.max_angular_velocity)
         velocities[1, idxs] = self.max_angular_velocity*np.sign(velocities[1, idxs])
+        
         self.velocities = velocities
 
         #Protected Functions
@@ -208,7 +243,7 @@ class Testbed():
         self.img = img
         bboxs, ids = cam.findArucoMarkers(img)
         self.detected = ids
-        print(ids)
+        print('ids', ids)
         # loop throug all the markers and augment each one
         if len(bboxs) != 0:
             rvec, tvec, _ = aruco.estimatePoseSingleMarkers(bboxs, self.marker_size, self.camera_matrix,
@@ -222,9 +257,9 @@ class Testbed():
                 # save position
                 id = int(id)
                 theta = misc.angle_correction(bbox)  # get the angle value
-                self.poses[0, id] = tvec[n, 0, 0]
-                self.poses[1, id] = tvec[n, 0, 1]
-                self.poses[2, id] = theta
+                self.poses[0, id-1] = tvec[n, 0, 0]
+                self.poses[1, id-1] = tvec[n, 0, 1]
+                self.poses[2, id-1] = theta
 
                 str_position = "id=%0.0f x=%0.1f y=%0.1f theta=%0.2f" % (id, tvec[n, 0, 0], tvec[n, 0, 1], theta)
                 cv2.putText(img, str_position, (0, 20 + 60 * id), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 0), 2,
@@ -296,7 +331,7 @@ class Testbed():
 
         r, g, b = (0, 0, 10)
         for id in range(self.number_of_robots):
-            dataControl += "%0.0f; %0.1f; %0.1f; %0.1f; %0.1f; %0.1f" % (id, 1 * self.velocities[0,id], 1 * self.velocities[1,id], r, g, b) + '\n'
+            dataControl += "%0.0f; %0.1f; %0.1f; %0.1f; %0.1f; %0.1f" % (id+1, 1 * self.velocities[0,id], 1 * self.velocities[1,id], r, g, b) + '\n'
             # dataControl += "%0.0f; %0.0f; %0.0f; %0.0f; %0.0f; %0.0f;" % (id, 1 * 200, 1 * 2, r, g, b) + '\n'
         
         # dataControl += "%0.0f; %0.0f; %0.0f; %0.0f; %0.0f; %0.0f;" % (nm, 1*vOutPut[nm-1],  1*wOutPut[nm-1], red, green, blue) + '\n'

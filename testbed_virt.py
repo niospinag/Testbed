@@ -46,7 +46,7 @@ class Testbed():
         self.robot_diameter = 20  
         self.wheel_radius = 3  
         self.base_length = 11  
-        self.max_linear_velocity = 20
+        self.max_linear_velocity = 200
         self.max_angular_velocity = 2*(self.wheel_radius/self.robot_diameter)*(self.max_linear_velocity/self.wheel_radius) 
         self.max_wheel_velocity = self.max_linear_velocity/self.wheel_radius  
 

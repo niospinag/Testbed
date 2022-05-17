@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+import scipy.io as spio
 
 def generate_initial_conditions(N, spacing=30, width=200, height=150):
     """Generates random initial conditions in an area of the specified
@@ -60,8 +61,8 @@ def at_pose(states, poses, position_error=0.05, rotation_error=0.2):
 
     #Check user input ranges/sizes
     assert states.shape[0] == 3, "In the at_pose function, the dimension of the state of each robot must be 3 ([x;y;theta]). Recieved %r." % states.shape[0]
-    assert poses.shape[0] == 3, "In the at_pose function, the dimension of the checked pose of each robot must be 3 ([x;y;theta]). Recieved %r." % poses.shape[0]
-    assert states.shape == poses.shape, "In the at_pose function, the robot current state and checked pose inputs must be the same size (3xN, where N is the number of robots being checked). Recieved a state array of size %r x %r and checked pose array of size %r x %r." % (states.shape[0], states.shape[1], poses.shape[0], poses.shape[1])
+    assert poses.shape[0] == 3, f"In the at_pose function, the dimension of the checked pose of each robot must be 3 ([x;y;theta]). Recieved { poses.shape[0] }."  
+    assert states.shape == poses.shape, "In the at_pose function, the robot current state and checked pose inputs must be the same size (3xN, where N is the number of robots being checked). Recieved a state array of size %r x %r and checked pose array of size %r x %r." % (states.shape[0], states.shape[1], poses.shape[0], poses.shape[1]) 
 
     # Calculate rotation errors with angle wrapping
     res = states[2, :] - poses[2, :]
@@ -139,3 +140,46 @@ def angle_correction(corners):
     angle = math.atan2(Py4 - Py1, Px1 - Px4)
 
     return angle
+
+
+def load_data_matlab(filename = ''):
+    assert isinstance(filename, str), "In the load_data_matlab function, the argument must be an string with the name of the file that containts the .mat file. Recieved type %r." % type(filename).__name__
+    
+    # mat = spio.loadmat('myData.mat', squeeze_me=True)
+    mat = spio.loadmat(filename, squeeze_me=True)
+
+    shift_x = -120
+    scale_x = 1
+
+    shift_y = -130
+    scale_y = 40
+
+    vhist = mat['vhist']  # structures need [()]
+    vphist = mat['vphist']
+    hist_pos = mat['hist_pos']
+    zhist = mat['zhist']
+    zphist = mat['zphist'] * scale_y + shift_y
+
+    T = mat['T']
+
+
+    def position(i):
+
+        pos = np.array([hist_pos[:, i]*scale_x + shift_x, zhist[:, i]*scale_y+shift_y, np.zeros((6))])
+        return pos
+
+    def get_pos(i):
+        # xphist[ f_estados, agente]
+        nv = vphist.shape[2] #6
+        hp = vphist.shape[1] #6
+        fs = vphist.shape[0] # 30
+        xphist = np.zeros((hp, nv))
+        xphist[0,:]=position(i)[0]
+
+        for j in range(hp-1):
+            xphist[j+1,:] = xphist[j,:] + T* vphist[i, j, :]
+
+        return xphist
+
+
+    return position, get_pos

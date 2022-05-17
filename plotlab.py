@@ -211,9 +211,15 @@ if __name__ == "__main__":
 
     mat = spio.loadmat('myData.mat', squeeze_me=True)
 
+    shift_x = -120
+    scale_x = 1
+
+    shift_y = -130
+    scale_y = 40
 
     def position(i):
-        pos = np.array([hist_pos[:, i], zhist[:, i], np.zeros((6))])
+
+        pos = np.array([hist_pos[:, i]*scale_x + shift_x, zhist[:, i]*scale_y+shift_y, np.zeros((6))])
         return pos
 
     def get_pos(i):
@@ -231,11 +237,13 @@ if __name__ == "__main__":
         return xphist
 
 
+
+
     vhist = mat['vhist']  # structures need [()]
     vphist = mat['vphist']
     hist_pos = mat['hist_pos']
-    zhist = mat['zhist']*10
-    zphist = mat['zphist']*10
+    zhist = mat['zhist']
+    zphist = mat['zphist'] * scale_y + shift_y
 
     T = mat['T']
 
@@ -245,5 +253,7 @@ if __name__ == "__main__":
 
     for i in range(30):
         poses = position(i)
+        print(poses)
+        time.sleep(0.1)        
         xphist = get_pos(i)
         visual.step(poses, xphist , zphist[i,:,:])
