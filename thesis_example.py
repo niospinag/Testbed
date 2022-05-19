@@ -13,7 +13,7 @@ import time
 # Instantiate Robotarium object
 N = 6
 
-load_position, _ = misc.load_data_matlab('myData.mat')
+load_position, _ = misc.load_data_matlab('myData.mat', frac_data = 10)
 
 initial_conditions = load_position(0)
 # initial_conditions = misc.generate_initial_conditions(N)
@@ -24,33 +24,35 @@ goal_points = load_position(0)
 print('goals', goal_points)
 print('goals shape', goal_points.shape)
 # Create unicycle pose controller
-unicycle_pose_controller = ctrl.create_clf_unicycle_position_controller(linear_velocity_gain=10, angular_velocity_gain=1.5)
+unicycle_pose_controller = ctrl.create_clf_unicycle_pose_controller(10, 2, 3)
 
 # Create barrier certificates to avoid collision
-uni_barrier_cert = brct.create_unicycle_barrier_certificate()
+uni_barrier_cert = brct.create_unicycle_barrier_certificate2()
 print(r.poses)
 # define x initially
 x = r.get_poses()
 r.step()
 
-r.draw_point(goal_points)
+# r.draw_point(goal_points)
 # While the number of robots at the required poses is less
 # than N...
-# try:
+
 iteration = 0
-if True:
+try:
+# if True:
     # while (np.size(misc.at_pose(x, goal_points, 200, 20) ) != N):
     while True:
 
         # Get poses of agents
         x = r.get_poses()
-        r.draw_point(goal_points)
-        # Create unicycle control inputs
-        # print(int(np.floor(iteration/10)))
-        # goal_points = load_position(int(np.floor(iteration/4)))
         
-        # r.draw_point(goal_points)
-        dxu = unicycle_pose_controller(x, goal_points[:2,:])
+        # Create unicycle control inputs
+        print(int(np.floor(iteration/10)))
+        # goal_points = load_position(int(np.floor(iteration/10)))
+        goal_points = load_position(iteration)
+        
+        r.draw_point(goal_points)
+        dxu = unicycle_pose_controller(x, goal_points)
         
         # Create safe control inputs (i.e., no collisions)
         # dxu = uni_barrier_cert(dxu, x)
@@ -61,12 +63,12 @@ if True:
         # Iterate the simulation
         r.step()
         iteration +=1
-# except Exception as e:
-#     #Call at end of script to print debug information and for your script to run on the Robotarium server properly
+except Exception as e:
+    #Call at end of script to print debug information and for your script to run on the Robotarium server properly
     
-#     print("\033[1;31;40m  Error on line {}   \033[0m  ".format(sys.exc_info()[-1].tb_lineno))
-#     print(e)
-#     r.call_at_scripts_end()
+    print("\033[1;31;40m  Error on line {}   \033[0m  ".format(sys.exc_info()[-1].tb_lineno))
+    print(e)
+    r.call_at_scripts_end()
 
-# finally:
-#     r.call_at_scripts_end()
+finally:
+    r.call_at_scripts_end()

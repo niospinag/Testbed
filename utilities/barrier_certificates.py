@@ -173,7 +173,7 @@ def create_single_integrator_barrier_certificate_with_boundary(barrier_gain=100,
 
     return f
 
-def create_single_integrator_barrier_certificate2(barrier_gain=100, unsafe_barrier_gain=1e6, safety_radius=17, magnitude_limit=2):
+def create_single_integrator_barrier_certificate2(barrier_gain=100, unsafe_barrier_gain=1e6, safety_radius=24, magnitude_limit=200):
     """Creates a barrier certificate for a single-integrator system.  This function
     returns another function for optimization reasons. This function is different from 
     create_single_integrator_barrier_certificate as it changes the barrier gain to a large
@@ -195,9 +195,9 @@ def create_single_integrator_barrier_certificate2(barrier_gain=100, unsafe_barri
     #Check user input ranges/sizes
     assert barrier_gain > 0, "In the function create_single_integrator_barrier_certificate2, the barrier gain inside the safe set (barrier_gain) must be positive. Recieved %r." % barrier_gain
     assert unsafe_barrier_gain > 0, "In the function create_single_integrator_barrier_certificate2, the barrier gain if outside the safe set (unsafe_barrier_gain) must be positive. Recieved %r." % unsafe_barrier_gain
-    assert safety_radius >= 0.12, "In the function create_single_integrator_barrier_certificate2, the safe distance between robots (safety_radius) must be greater than or equal to the diameter of the robot (0.12m) plus the distance to the look ahead point used in the diffeomorphism if that is being used. Recieved %r." % safety_radius
+    assert safety_radius >= 24, "In the function create_single_integrator_barrier_certificate2, the safe distance between robots (safety_radius) must be greater than or equal to the diameter of the robot (0.12m) plus the distance to the look ahead point used in the diffeomorphism if that is being used. Recieved %r." % safety_radius
     assert magnitude_limit > 0, "In the function create_single_integrator_barrier_certificate2, the maximum linear velocity of the robot (magnitude_limit) must be positive. Recieved %r." % magnitude_limit
-    assert magnitude_limit <= 0.2, "In the function create_single_integrator_barrier_certificate2, the maximum linear velocity of the robot (magnitude_limit) must be less than the max speed of the robot (0.2m/s). Recieved %r." % magnitude_limit
+    assert magnitude_limit <= 250, "In the function create_single_integrator_barrier_certificate2, the maximum linear velocity of the robot (magnitude_limit) must be less than the max speed of the robot (0.2m/s). Recieved %r." % magnitude_limit
 
 
     def f(dxi, x):
@@ -351,7 +351,7 @@ def create_unicycle_barrier_certificate_with_boundary(barrier_gain=100, safety_r
 
     return f
 
-def create_unicycle_barrier_certificate2(barrier_gain=500, unsafe_barrier_gain=1e6, safety_radius=12, projection_distance=5, magnitude_limit=2):
+def create_unicycle_barrier_certificate2(barrier_gain=500, unsafe_barrier_gain=1e6, safety_radius=24, projection_distance=5, magnitude_limit=200):
     """ Creates a unicycle barrier cetifcate to avoid collisions. Uses the diffeomorphism mapping
     and single integrator implementation. For optimization purposes, this function returns 
     another function.
@@ -373,10 +373,10 @@ def create_unicycle_barrier_certificate2(barrier_gain=500, unsafe_barrier_gain=1
     #Check user input ranges/sizes
     assert barrier_gain > 0, "In the function create_unicycle_barrier_certificate2, the barrier gain inside the safe set (barrier_gain) must be positive. Recieved %r." % barrier_gain
     assert unsafe_barrier_gain > 0, "In the function create_unicycle_barrier_certificate2, the barrier gain outside the safe set (unsafe_barrier_gain) must be positive. Recieved %r." % unsafe_barrier_gain
-    assert safety_radius >= 0.12, "In the function create_unicycle_barrier_certificate2, the safe distance between robots (safety_radius) must be greater than or equal to the diameter of the robot (0.12m). Recieved %r." % safety_radius
+    assert safety_radius >= 24, "In the function create_unicycle_barrier_certificate2, the safe distance between robots (safety_radius) must be greater than or equal to the diameter of the robot (0.12m). Recieved %r." % safety_radius
     assert projection_distance > 0, "In the function create_unicycle_barrier_certificate2, the projected point distance for the diffeomorphism between sinlge integrator and unicycle (projection_distance) must be positive. Recieved %r." % projection_distance
     assert magnitude_limit > 0, "In the function create_unicycle_barrier_certificate2, the maximum linear velocity of the robot (magnitude_limit) must be positive. Recieved %r." % magnitude_limit
-    assert magnitude_limit <= 0.2, "In the function create_unicycle_barrier_certificate2, the maximum linear velocity of the robot (magnitude_limit) must be less than the max speed of the robot (0.2m/s). Recieved %r." % magnitude_limit
+    assert magnitude_limit <= 250, "In the function create_unicycle_barrier_certificate2, the maximum linear velocity of the robot (magnitude_limit) must be less than the max speed of the robot (0.2m/s). Recieved %r." % magnitude_limit
 
 
     si_barrier_cert = create_single_integrator_barrier_certificate2(barrier_gain=barrier_gain, unsafe_barrier_gain=unsafe_barrier_gain, safety_radius=safety_radius+projection_distance)

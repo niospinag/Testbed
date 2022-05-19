@@ -1,6 +1,6 @@
 '''this is an example of how to implement the textbed
 '''
-from testbed_real import Testbed
+from testbed_virt import Testbed
 import utilities.misc as misc 
 import utilities.barrier_certificates as brct
 import utilities.controllers as ctrl
@@ -56,7 +56,7 @@ while (np.size(misc.at_pose(x, goal_points)) != N):
         dxu = unicycle_pose_controller(x, goal_points[:2,:])
         
         # Create safe control inputs (i.e., no collisions)
-        # dxu = uni_barrier_cert(dxu, x)
+        dxu = uni_barrier_cert(dxu, x)
 
         # Set the velocities
         r.set_velocities(np.arange(N), dxu)

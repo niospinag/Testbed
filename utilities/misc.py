@@ -142,33 +142,56 @@ def angle_correction(corners):
     return angle
 
 
-def load_data_matlab(filename = ''):
+def load_data_matlab(filename = '', frac_data=0):
     assert isinstance(filename, str), "In the load_data_matlab function, the argument must be an string with the name of the file that containts the .mat file. Recieved type %r." % type(filename).__name__
     
     # mat = spio.loadmat('myData.mat', squeeze_me=True)
     mat = spio.loadmat(filename, squeeze_me=True)
 
-    shift_x = -120
+    shift_x = -50
     scale_x = 1
 
-    shift_y = -130
-    scale_y = 40
+    shift_y = -100
+    scale_y = 20
 
     vhist = mat['vhist']  # structures need [()]
     vphist = mat['vphist']
     hist_pos = mat['hist_pos']
     zhist = mat['zhist']
     zphist = mat['zphist'] * scale_y + shift_y
-
+    
     T = mat['T']
+    N = hist_pos.shape[0]
+    horizon = hist_pos.shape[1]
 
+    if frac_data != 0:
+        x_pos = np.zeros(( N , (horizon-1)*frac_data ))
+        y_pos = np.zeros(( N , (horizon-1)*frac_data ))
+        # x_pos = np.array([])
+        # y_pos = np.array([])
+        
+        for j in range(horizon-1):
+            dtx = (hist_pos[:,j+1]-hist_pos[:,j])/ frac_data
+            dty = (zhist[:,j+1]-zhist[:,j])/ frac_data
+            for i in range(frac_data):
+                x_pos[:, j*frac_data + i] = hist_pos[:,j] + i*dtx
+                y_pos[:, j*frac_data + i] = zhist[:,j] +  i*dty
+        
+        # print(x_pos.shape, y_pos.shape)
+        # print(x_pos[:,295:])
+
+    else:
+        x_pos = hist_pos
+        y_pos = zhist 
+        print(x_pos.shape, y_pos.shape)
 
     def position(i):
 
-        pos = np.array([hist_pos[:, i]*scale_x + shift_x, zhist[:, i]*scale_y+shift_y, np.zeros((6))])
+        pos = np.array([x_pos[:, i]*scale_x + shift_x,  y_pos[:, i]*scale_y+shift_y, np.zeros((6))])
+        print(pos.shape)
         return pos
 
-    def get_pos(i):
+    def get_future_pos(i):
         # xphist[ f_estados, agente]
         nv = vphist.shape[2] #6
         hp = vphist.shape[1] #6
@@ -182,4 +205,35 @@ def load_data_matlab(filename = ''):
         return xphist
 
 
-    return position, get_pos
+    return position, get_future_pos
+
+def err_pose(states, poses, position_error=0.05, rotation_error=0.2):
+    """Checks whether robots are "close enough" to poses
+
+    states: 3xN numpy array (of unicycle states)
+    poses: 3xN numpy array (of desired states)
+
+    -> 1xN numpy index array (of agents that are close enough)
+    """
+    #Check user input types
+    assert isinstance(states, np.ndarray), "In the at_pose function, the robot current state argument (states) must be a numpy ndarray. Recieved type %r." % type(states).__name__
+    assert isinstance(poses, np.ndarray), "In the at_pose function, the checked pose argument (poses) must be a numpy ndarray. Recieved type %r." % type(poses).__name__
+    assert isinstance(position_error, (float,int)), "In the at_pose function, the allowable position error argument (position_error) must be an integer or float. Recieved type %r." % type(position_error).__name__
+    assert isinstance(rotation_error, (float,int)), "In the at_pose function, the allowable angular error argument (rotation_error) must be an integer or float. Recieved type %r." % type(rotation_error).__name__
+
+    #Check user input ranges/sizes
+    assert states.shape[0] == 3, "In the at_pose function, the dimension of the state of each robot must be 3 ([x;y;theta]). Recieved %r." % states.shape[0]
+    assert poses.shape[0] == 3, f"In the at_pose function, the dimension of the checked pose of each robot must be 3 ([x;y;theta]). Recieved { poses.shape[0] }."  
+    assert states.shape == poses.shape, "In the at_pose function, the robot current state and checked pose inputs must be the same size (3xN, where N is the number of robots being checked). Recieved a state array of size %r x %r and checked pose array of size %r x %r." % (states.shape[0], states.shape[1], poses.shape[0], poses.shape[1]) 
+
+    # Calculate rotation errors with angle wrapping
+    res = states[2, :] - poses[2, :]
+    res = np.abs(np.arctan2(np.sin(res), np.cos(res)))
+
+    # Calculate position errors
+    pes = np.linalg.norm(states[:2, :] - poses[:2, :], 2, 0)
+
+    # # Determine which agents are done
+    # done = np.nonzero((res <= rotation_error) & (pes <= position_error))
+
+    return [res, pes]

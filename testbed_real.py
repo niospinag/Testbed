@@ -47,22 +47,21 @@ class Testbed():
         self.robot_diameter = 20  #<===== check
         self.wheel_radius = 3  #<===== check
         self.base_length = 11  #<===== check
-        self.max_linear_velocity = 200  #<===== check
+        self.max_linear_velocity = 100  #<===== check
         self.max_angular_velocity = 2*(self.wheel_radius/self.robot_diameter)*(self.max_linear_velocity/self.wheel_radius)  #<===== check
         self.max_wheel_velocity = self.max_linear_velocity/self.wheel_radius  #<===== check
 
         self.robot_radius = self.robot_diameter/2
 
         self.velocities = np.zeros((2, number_of_robots))
-        self.poses = self.initial_conditions
-        if self.initial_conditions.size == 0:
-            self.poses = self.get_poses()
+        self.poses = 1*self.initial_conditions
         
         self.left_led_commands = []
         self.right_led_commands = []
 
-        self.controller = ctrl.create_clf_unicycle_position_controller(10, 1.5)        
+        # self.controller = ctrl.create_clf_unicycle_pose_controller(10, 5, 3) #10, 1.5        
 
+        self.controller = ctrl.create_pid_unicycle_pose_controlle(proportional_gain=20, differential_gain=1, integral_gain = 1)
 
         # self.visual = plb.Plotlab(number_of_robots=self.number_of_robots, show_figure=True, initial_conditions=self.initial_conditions, xf_pos = [], yf_pos= [])
 
@@ -100,14 +99,15 @@ class Testbed():
         if (initial_conditions.size > 0):
             assert initial_conditions.shape == (3, number_of_robots), "Initial conditions provided when creating the Testbed object must of size 3xN, where N is the number of robots used. Expected a 3 x %r array but recieved a %r x %r array." % (number_of_robots, initial_conditions.shape[0], initial_conditions.shape[1])
             # Move the vehicles to the initial conditions decired 
-            actual_pose = self.get_poses()
-            self.move2target(actual_pose, self.initial_conditions)
-
+            print('moving to initial conditions')
+            print(self.initial_conditions)
+            self.move2target( self.initial_conditions)
         
         else:
-            initial_conditions=self.get_poses()[:,:number_of_robots]
+            # initial_conditions=self.get_poses()[:,:number_of_robots]
             assert initial_conditions.shape == (3, number_of_robots), "Camera does not detect enough vehicles. Please make sure you put the needed agents. Expected %r agents, but recieved %r." % (number_of_robots, initial_conditions.shape[1])
-
+        
+        
 
 #Initialize some rendering variables
         self.previous_render_time = time.time()
@@ -124,30 +124,36 @@ class Testbed():
         self._iterations = 0 
 
 
-    def move2target(self, initial, final):
-        x=initial
+    def move2target(self, final):
+        x = self.get_poses()
         N = self.number_of_robots
-        print('atpose', misc.at_pose(x, final) )
-        while (np.size(misc.at_pose(x, final) ) != N):
-        
+        print('max_vel', self.max_angular_velocity)
+        self.max_angular_velocity = 45
+        cache = {'int_err_v': np.zeros(N), 'int_err_w':np.zeros(N)}
+        # for i in range(200):
+        while ( np.size(misc.at_pose(x, final) ) != N):
             # Create safe control inputs (i.e., no collisions)
-            dxu = self.controller(x, final)
-
+            self.draw_point(final)
+            print(x)
+            dxu, cache = self.controller(x, final, cache)
+            self.set_velocities(np.arange(N),dxu)
             dataControl = str(self.number_of_robots) + '\n'  # numero de marcadores
-            r, g, b = (70, 40, 10)
+            r, g, b = (10, 10, 10)
             for id in range(self.number_of_robots):
-                dataControl += "%0.0f; %0.1f; %0.1f; %0.1f; %0.1f; %0.1f" % (id+1, 1 * dxu[0,id], 1 * dxu[1,id], r, g, b) + '\n'
+                dataControl += "%0.0f; %0.1f; %0.1f; %0.1f; %0.1f; %0.1f" % (id+1, 1 * self.velocities[0,id], 1 * self.velocities[1,id], r, g, b) + '\n'
                 
             dataControl += 'xxF'
             datos = dataControl.encode("utf-8")
             self.esp8266.write(datos)
-            print(datos)
 
+            print(datos)
 
             x=self.get_poses()
 
+        self.d_points=False
             
         input('Press any key to start the implementation')
+
 
     def set_velocities(self, ids, velocities):
         # in case of problems ''' sudo chmod 666 /dev/ttyUSB0 '''
@@ -261,9 +267,11 @@ class Testbed():
                 self.poses[1, id-1] = tvec[n, 0, 1]
                 self.poses[2, id-1] = theta
 
-                str_position = "id=%0.0f x=%0.1f y=%0.1f theta=%0.2f" % (id, tvec[n, 0, 0], tvec[n, 0, 1], theta)
-                cv2.putText(img, str_position, (0, 20 + 60 * id), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 0), 2,
-                            cv2.LINE_AA)
+                # print text on the video cam
+                # str_position = "id=%0.0f x=%0.1f y=%0.1f theta=%0.2f" % (id, tvec[n, 0, 0], tvec[n, 0, 1], theta)
+                
+                # cv2.putText(img, str_position, (0, 20 + 60 * id), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 0), 2,
+                #             cv2.LINE_AA)
 
 
         else:
