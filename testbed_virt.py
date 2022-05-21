@@ -134,7 +134,8 @@ class Testbed():
 
 
     def set_velocities(self, ids, velocities):
-
+        assert isinstance(velocities , np.ndarray), "The velocities hs to be an np.array in set_velocities() function %r." % type(initial_conditions).__name__
+        
         # Threshold linear velocities
         idxs = np.where( np.abs(velocities[0, :]) > self.max_linear_velocity )
         velocities[0, idxs] = self.max_linear_velocity*np.sign( velocities[0, idxs] )

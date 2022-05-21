@@ -54,9 +54,9 @@ while (np.size(misc.at_pose(x, goal_points)) != N):
         # Create unicycle control inputs
         
         dxu = unicycle_pose_controller(x, goal_points[:2,:])
-        
+        print(dxu)
         # Create safe control inputs (i.e., no collisions)
-        dxu = uni_barrier_cert(dxu, x)
+        # dxu = uni_barrier_cert(dxu, x)
 
         # Set the velocities
         r.set_velocities(np.arange(N), dxu)

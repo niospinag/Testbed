@@ -47,8 +47,9 @@ class Testbed():
         self.robot_diameter = 20  #<===== check
         self.wheel_radius = 3  #<===== check
         self.base_length = 11  #<===== check
-        self.max_linear_velocity = 100  #<===== check
-        self.max_angular_velocity = 2*(self.wheel_radius/self.robot_diameter)*(self.max_linear_velocity/self.wheel_radius)  #<===== check
+        self.max_linear_velocity = 200  #<===== check
+        self.max_angular_velocity = 45
+        # self.max_angular_velocity = 2*(self.wheel_radius/self.robot_diameter)*(self.max_linear_velocity/self.wheel_radius)  #<===== check
         self.max_wheel_velocity = self.max_linear_velocity/self.wheel_radius  #<===== check
 
         self.robot_radius = self.robot_diameter/2
@@ -59,9 +60,9 @@ class Testbed():
         self.left_led_commands = []
         self.right_led_commands = []
 
-        # self.controller = ctrl.create_clf_unicycle_pose_controller(10, 5, 3) #10, 1.5        
-
-        self.controller = ctrl.create_pid_unicycle_pose_controlle(proportional_gain=20, differential_gain=1, integral_gain = 1)
+        # self.controller = ctrl.create_clf_unicycle_position_controller(linear_velocity_gain=10, angular_velocity_gain=0.2)
+        
+        self.controller = ctrl.create_pid_unicycle_pose_controlle(linear_gain = [15, 0, 0.1], angular_gain = [16, 1, 0.1], num_robots = self.number_of_robots)
 
         # self.visual = plb.Plotlab(number_of_robots=self.number_of_robots, show_figure=True, initial_conditions=self.initial_conditions, xf_pos = [], yf_pos= [])
 
@@ -75,7 +76,7 @@ class Testbed():
         # self.left_wheel_patches = []
 
         # opencv parameters ///////////////////////////////////////////////////////
-        exposure = -5
+        exposure = -0
         self.WIDTH = 1280 # 1280 // 1920  //1600 //1024 //640
         self.HEIGHT = 720 # 720 // 1080  //896  // 576  //360
 
@@ -101,10 +102,10 @@ class Testbed():
             # Move the vehicles to the initial conditions decired 
             print('moving to initial conditions')
             print(self.initial_conditions)
-            self.move2target( self.initial_conditions)
+            # self.move2target( self.initial_conditions)
         
         else:
-            # initial_conditions=self.get_poses()[:,:number_of_robots]
+            self.initial_conditions=self.get_poses()[:,:number_of_robots]
             assert initial_conditions.shape == (3, number_of_robots), "Camera does not detect enough vehicles. Please make sure you put the needed agents. Expected %r agents, but recieved %r." % (number_of_robots, initial_conditions.shape[1])
         
         
@@ -129,18 +130,24 @@ class Testbed():
         N = self.number_of_robots
         print('max_vel', self.max_angular_velocity)
         self.max_angular_velocity = 45
-        cache = {'int_err_v': np.zeros(N), 'int_err_w':np.zeros(N)}
-        # for i in range(200):
-        while ( np.size(misc.at_pose(x, final) ) != N):
+        cache = {'int_err_v': np.zeros(N), 'int_err_w': np.zeros(N), \
+             'rate_err_v': np.zeros(N), 'rate_err_w': np.zeros(N), \
+                 'last_err_v': np.zeros(N), 'last_err_w': np.zeros(N), 'prev_time': time.time() }
+
+        for i in range(200):
+        # while ( np.size(misc.at_pose(x, final) ) != N):
             # Create safe control inputs (i.e., no collisions)
             self.draw_point(final)
-            print(x)
+            
+            # dxu= self.controller(x, final[:2,:])
             dxu, cache = self.controller(x, final, cache)
             self.set_velocities(np.arange(N),dxu)
+
+
             dataControl = str(self.number_of_robots) + '\n'  # numero de marcadores
-            r, g, b = (10, 10, 10)
+            r, g, b = (5, 5, 5)
             for id in range(self.number_of_robots):
-                dataControl += "%0.0f; %0.1f; %0.1f; %0.1f; %0.1f; %0.1f" % (id+1, 1 * self.velocities[0,id], 1 * self.velocities[1,id], r, g, b) + '\n'
+                dataControl += "%0.0f; %0.1f; %0.1f; %0.1f; %0.1f; %0.1f" % (id+1, self.velocities[0,id], self.velocities[1,id], r, g, b) + '\n'
                 
             dataControl += 'xxF'
             datos = dataControl.encode("utf-8")
@@ -152,12 +159,11 @@ class Testbed():
 
         self.d_points=False
             
-        input('Press any key to start the implementation')
+        input('Press ENTER to start the implementation')
 
 
     def set_velocities(self, ids, velocities):
         # in case of problems ''' sudo chmod 666 /dev/ttyUSB0 '''
-        pass
 
         # Threshold linear velocities
         idxs = np.where( np.abs(velocities[0, :]) > self.max_linear_velocity )
@@ -339,7 +345,7 @@ class Testbed():
 
         r, g, b = (0, 0, 10)
         for id in range(self.number_of_robots):
-            dataControl += "%0.0f; %0.1f; %0.1f; %0.1f; %0.1f; %0.1f" % (id+1, 1 * self.velocities[0,id], 1 * self.velocities[1,id], r, g, b) + '\n'
+            dataControl += "%0.0f; %0.1f; %0.1f; %0.1f; %0.1f; %0.1f" % (id+1, self.velocities[0,id], self.velocities[1,id], r, g, b) + '\n'
             # dataControl += "%0.0f; %0.0f; %0.0f; %0.0f; %0.0f; %0.0f;" % (id, 1 * 200, 1 * 2, r, g, b) + '\n'
         
         # dataControl += "%0.0f; %0.0f; %0.0f; %0.0f; %0.0f; %0.0f;" % (nm, 1*vOutPut[nm-1],  1*wOutPut[nm-1], red, green, blue) + '\n'

@@ -1,7 +1,7 @@
 import numpy as np
 import math
 from utilities.transformations import *
-
+import time
 
 def create_si_position_controller(x_velocity_gain=10, y_velocity_gain=10, velocity_magnitude_limit=0.15):
     """Creates a position controller for single integrators.  Drives a single integrator to a point
@@ -152,9 +152,9 @@ def create_clf_unicycle_pose_controller(approach_angle_gain=1, desired_angle_gai
             ca = np.cos(alpha)
             sa = np.sin(alpha)
 
-            # print(gamma)
-            # print(e)
-            # print(ca)
+            print(gamma)
+            print(e)
+            print(ca)
 
             dxu[0,i] = gamma* e* ca
             dxu[1,i] = k*alpha + gamma*((ca*sa)/alpha)*(alpha + h*theta)
@@ -217,7 +217,8 @@ def create_hybrid_unicycle_pose_controller(linear_velocity_gain=1, angular_veloc
 
 
     
-def create_pid_unicycle_pose_controlle(proportional_gain=10, differential_gain=1, integral_gain = 1):
+# def create_pid_unicycle_pose_controlle(proportional_gain=10, differential_gain=1, integral_gain = 1):
+def create_pid_unicycle_pose_controlle(linear_gain = [15, 0, 0], angular_gain = [16, 0, 0], num_robots = 1):
     """Returns a controller ($u: \mathbf{R}^{3 \times N} \times \mathbf{R}^{3 \times N} \to \mathbf{R}^{2 \times N}$) 
     that will drive a unicycle-modeled agent to a pose (i.e., position & orientation). This control is based on a PID controller.
 
@@ -229,14 +230,20 @@ def create_pid_unicycle_pose_controlle(proportional_gain=10, differential_gain=1
     -> function
     """
 
-    kp_dist = proportional_gain
-    kp_ang = 0.5*proportional_gain
-    ki_dist = 5*differential_gain
-    ki_ang = differential_gain
-    kd_dist = 5*integral_gain
-    kd_ang = integral_gain
+    kp_v, ki_v, kd_v = linear_gain
 
-    def control_PID(states, poses , cache = {'int_err_v':0, 'int_err_w':0}, dt=0.064):
+    kp_w, ki_w, kd_w = angular_gain
+
+    cache = {'int_err_v': np.zeros(num_robots), 'int_err_w': np.zeros(num_robots), \
+             'rate_err_v': np.zeros(num_robots), 'rate_err_w': np.zeros(num_robots), \
+                 'last_err_v': np.zeros(num_robots), 'last_err_w': np.zeros(num_robots), 'prev_time': time.time() }
+
+    def control_PID(states, poses , cache = cache):
+        ''' states: 3xN numpy array (of unicycle states, [x;y;theta])
+            poses: 3xN numpy array (of desired positons, [x_goal;y_goal ; tetha_goal])
+
+            -> 2xN numpy array (of unicycle control inputs)
+        '''
 
         # global deltaTime  # use of the global variables
         # global eantX, eantY, integralErrorY, integralErrorX
@@ -247,67 +254,65 @@ def create_pid_unicycle_pose_controlle(proportional_gain=10, differential_gain=1
         #  get cache values
         integralErrorV = cache['int_err_v']
         integralErrorW = cache['int_err_w']
+        rate_err_v = cache['rate_err_v']
+        rate_err_w = cache['rate_err_w']
+        last_err_v = cache['last_err_v']
+        last_err_w = cache['last_err_w']
+        now = time.time()
+        dt = now - cache['prev_time']
+        # dt = 0.1 # <----------------------------
         for i in range(N_states):
         # correction of the angle
-            targ_angle = math.atan2(states[1,i]-poses[1,i],states[0,i]-poses[0,i])
+            targ_angle = math.atan2(poses[1,i]-states[1,i] , poses[0,i]-states[0,i])
             
-            e_ang = targ_angle -poses[2,i] # error between the robot and target
-            e_dist = np.sqrt((states[0,i]-poses[0,i])**2 + (states[1,i]-poses[1,i])**2)
+            err_w = targ_angle - states[2,i] # error between the robot and target
+            err_v = np.sqrt((poses[0,i] - states[0,i])**2 + (poses[1,i] - states[1,i])**2)
             # e_dist = np.linalg.norm(states[:2,i] - poses[:2,i])
+            # print('der error ',rate_err_w)
+            # print('dt', dt)
+
+            if(err_w< -np.pi):
+                err_w=2*np.pi+ err_w
+            if(err_w > np.pi):
+                err_w = -2*np.pi + err_w
             
-            if(e_ang< -np.pi):
-                e_ang=2*np.pi+e_ang
-            if(e_ang> np.pi):
-                e_ang=-2*np.pi+e_ang
-            # e_ang = e_ang % 360
+            # err_w = err_w % 360
             
-            if(np.abs(e_ang)<(0.2)): #0.2
-                e_ang = 0
-            # print(e_dist)
+            if(np.abs(err_w)<(0.2)): #0.2
+                err_w = 0
             
-            integralErrorV[i] += e_dist*dt
-            integralErrorW[i] += e_ang*dt
+            # print(err_v)
             
+            integralErrorV[i] += err_v*dt
+            integralErrorW[i] += err_w*dt
+            rate_err_v[i] = ( err_v - last_err_v[i] )/dt
+            rate_err_w[i] = ( err_w - last_err_w[i] )/dt
+
             
-            if(e_dist<3):
-                e_dist=0
+            if(err_v<3):
+                err_v=0
             
             # antibounding
             integralErrorV[i]= min(integralErrorV[i] , 45)
             integralErrorW[i]= min(integralErrorW[i] , 5)
-            
-            # if integralErrorW > 5:
-            #     integralErrorW = 5
 
-            dxu[0,i] = kp_dist*e_dist #+ integralErrorV[i]
-            dxu[1,i] = kp_ang*e_ang #+ integralErrorW[i]
+            dxu[0,i] = kp_v*err_v + ki_v* integralErrorV[i] + kd_v * rate_err_v[i] 
+            dxu[1,i] = kp_w*err_w + ki_w* integralErrorW[i] + kd_w * rate_err_w[i]
+
         # update cache
+        cache['last_err_v'], cache['last_err_w'] = err_v, err_w
+
         cache['int_err_v'] = integralErrorV
         cache['int_err_w'] = integralErrorW
+        cache['rate_err_v'] = rate_err_v
+        cache['rate_err_v'] = rate_err_w
+        cache['prev_time'] = now
+        cache['last_err_v'] = last_err_v
+        cache['last_err_w'] = last_err_w
+
+
+
         return  dxu, cache
         
-    def pose_uni_clf_controller(states, poses):
-
-        N_states = states.shape[1]
-        dxu = np.zeros((2,N_states))
-
-        for i in range(N_states):
-            translate = R(-poses[2,i]).dot((poses[:2,i]-states[:2,i]))
-            e = np.linalg.norm(translate)
-            theta = np.arctan2(translate[1],translate[0])
-            alpha = theta - (states[2,i]-poses[2,i])
-            alpha = np.arctan2(np.sin(alpha),np.cos(alpha))
-
-            ca = np.cos(alpha)
-            sa = np.sin(alpha)
-
-            # print(gamma)
-            # print(e)
-            # print(ca)
-
-            dxu[0,i] = gamma* e* ca
-            dxu[1,i] = k*alpha + gamma*((ca*sa)/alpha)*(alpha + h*theta)
-
-        return dxu
 
     return control_PID

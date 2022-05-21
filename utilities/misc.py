@@ -144,22 +144,23 @@ def angle_correction(corners):
 
 def load_data_matlab(filename = '', frac_data=0):
     assert isinstance(filename, str), "In the load_data_matlab function, the argument must be an string with the name of the file that containts the .mat file. Recieved type %r." % type(filename).__name__
+    assert isinstance(frac_data, int), "In the load_data_matlab function, the argument must be an integer with the number of the subdata needed between 2 points. Recieved type %r." % type(filename).__name__
     
     # mat = spio.loadmat('myData.mat', squeeze_me=True)
     mat = spio.loadmat(filename, squeeze_me=True)
 
-    shift_x = -50
-    scale_x = 1
+    shift_x = -100
+    scale_x = 1.5
 
-    shift_y = -100
+    shift_y = -50
     scale_y = 20
 
     vhist = mat['vhist']  # structures need [()]
     vphist = mat['vphist']
     hist_pos = mat['hist_pos']
     zhist = mat['zhist']
-    zphist = mat['zphist'] * scale_y + shift_y
-    
+    # zphist = mat['zphist'] * scale_y + shift_y
+    print('zhist', type(zhist))
     T = mat['T']
     N = hist_pos.shape[0]
     horizon = hist_pos.shape[1]
@@ -167,18 +168,22 @@ def load_data_matlab(filename = '', frac_data=0):
     if frac_data != 0:
         x_pos = np.zeros(( N , (horizon-1)*frac_data ))
         y_pos = np.zeros(( N , (horizon-1)*frac_data ))
-        # x_pos = np.array([])
-        # y_pos = np.array([])
         
         for j in range(horizon-1):
-            dtx = (hist_pos[:,j+1]-hist_pos[:,j])/ frac_data
-            dty = (zhist[:,j+1]-zhist[:,j])/ frac_data
-            for i in range(frac_data):
-                x_pos[:, j*frac_data + i] = hist_pos[:,j] + i*dtx
-                y_pos[:, j*frac_data + i] = zhist[:,j] +  i*dty
-        
+
+            dty = zhist[:,j+1] -    zhist[:,j]
+            dty = dty / (-255*frac_data)
+
+            dtx = (hist_pos[:,j+1] - hist_pos[:,j]) / frac_data
+            # print('dty',dty)
+            
+            for k in range(frac_data):
+                x_pos[:, j*frac_data + k] = hist_pos[:,j] + k*dtx
+                y_pos[:, j*frac_data + k] = zhist[:,j] +  k*dty
+                print(f'x_pos {j*frac_data + k}', x_pos[:, j*frac_data + k] )
+                print(f'y_pos {j*frac_data + k}', y_pos[:, j*frac_data + k] )
         # print(x_pos.shape, y_pos.shape)
-        # print(x_pos[:,295:])
+        # print(x_pos[:,200:])
 
     else:
         x_pos = hist_pos
@@ -188,7 +193,7 @@ def load_data_matlab(filename = '', frac_data=0):
     def position(i):
 
         pos = np.array([x_pos[:, i]*scale_x + shift_x,  y_pos[:, i]*scale_y+shift_y, np.zeros((6))])
-        print(pos.shape)
+        
         return pos
 
     def get_future_pos(i):
