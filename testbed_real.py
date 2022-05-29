@@ -62,7 +62,8 @@ class Testbed():
 
         # self.controller = ctrl.create_clf_unicycle_position_controller(linear_velocity_gain=10, angular_velocity_gain=0.2)
         
-        self.controller = ctrl.create_pid_unicycle_pose_controlle(linear_gain = [15, 0, 0.1], angular_gain = [16, 1, 0.1], num_robots = self.number_of_robots)
+        # self.controller = ctrl.create_pid_unicycle_position_controller(linear_gain = [10, 0, 0.2], angular_gain = [10, 0.1, 1], num_robots = self.number_of_robots)
+        self.controller = ctrl.create_reactive_pose_controller(linear_gain = [9, 0.1, 0.1], angular_gain = [10, 0.1 , 0.1], num_robots = self.number_of_robots)
 
         # self.visual = plb.Plotlab(number_of_robots=self.number_of_robots, show_figure=True, initial_conditions=self.initial_conditions, xf_pos = [], yf_pos= [])
 
@@ -90,19 +91,28 @@ class Testbed():
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.WIDTH)  
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.HEIGHT)  
         self.cap.set(cv2.CAP_PROP_FOCUS, 0)
+        self.video = None
+        self.fps = int(self.cap.get(cv2.CAP_PROP_FPS))
+        self.record_video_bool = False
 
         self.position = np.ones((3, 100))
         self.detected = []
         self.d_points = False
+
+        #Initialize steps
+        self._iterations = 0 
+
         # initialize serial cominication
         self.esp8266 = serial.Serial("/dev/ttyUSB0", 115200)
+        if number_of_robots>6:
+            self.esp8266_2 = serial.Serial("/dev/ttyUSB1", 115200)
 
         if (initial_conditions.size > 0):
             assert initial_conditions.shape == (3, number_of_robots), "Initial conditions provided when creating the Testbed object must of size 3xN, where N is the number of robots used. Expected a 3 x %r array but recieved a %r x %r array." % (number_of_robots, initial_conditions.shape[0], initial_conditions.shape[1])
             # Move the vehicles to the initial conditions decired 
             print('moving to initial conditions')
             print(self.initial_conditions)
-            # self.move2target( self.initial_conditions)
+            self.move2target( self.initial_conditions)
         
         else:
             self.initial_conditions=self.get_poses()[:,:number_of_robots]
@@ -121,8 +131,7 @@ class Testbed():
         #Initialization of error collection.
         self._errors = {}
 
-        #Initialize steps
-        self._iterations = 0 
+        
 
 
     def move2target(self, final):
@@ -130,30 +139,29 @@ class Testbed():
         N = self.number_of_robots
         print('max_vel', self.max_angular_velocity)
         self.max_angular_velocity = 45
-        cache = {'int_err_v': np.zeros(N), 'int_err_w': np.zeros(N), \
-             'rate_err_v': np.zeros(N), 'rate_err_w': np.zeros(N), \
-                 'last_err_v': np.zeros(N), 'last_err_w': np.zeros(N), 'prev_time': time.time() }
-
         for i in range(200):
-        # while ( np.size(misc.at_pose(x, final) ) != N):
+        # while ( np.size(misc.at_pose(x, final, position_error=10, rotation_error=0.2) ) != N):
             # Create safe control inputs (i.e., no collisions)
             self.draw_point(final)
             
             # dxu= self.controller(x, final[:2,:])
-            dxu, cache = self.controller(x, final, cache)
+            dxu= self.controller(x, final)
             self.set_velocities(np.arange(N),dxu)
 
+            self.step()
+            # dataControl = str(self.number_of_robots) + '\n'  # numero de marcadores
 
-            dataControl = str(self.number_of_robots) + '\n'  # numero de marcadores
-            r, g, b = (5, 5, 5)
-            for id in range(self.number_of_robots):
-                dataControl += "%0.0f; %0.1f; %0.1f; %0.1f; %0.1f; %0.1f" % (id+1, self.velocities[0,id], self.velocities[1,id], r, g, b) + '\n'
-                
-            dataControl += 'xxF'
-            datos = dataControl.encode("utf-8")
-            self.esp8266.write(datos)
+            # r, g, b = (5, 5, 5)
 
-            print(datos)
+            # for id in range(self.number_of_robots):
+            #     dataControl += "%0.0f; %0.0f; %0.0f; %0.0f; %0.0f; %0.0f" % (id+1, self.velocities[0,id], self.velocities[1,id], r, g, b) + '\n'
+            # # dataControl += "9; 0.0; 0.0; 255.0; 255.0; 255.0\n"
+
+            # dataControl += 'xxF'
+            # datos = dataControl.encode("utf-8")
+            # self.esp8266.write(datos)
+
+            # print(datos)
 
             x=self.get_poses()
 
@@ -255,6 +263,7 @@ class Testbed():
         self.img = img
         bboxs, ids = cam.findArucoMarkers(img)
         self.detected = ids
+        size = self.poses.shape[1]
         print('ids', ids)
         # loop throug all the markers and augment each one
         if len(bboxs) != 0:
@@ -268,10 +277,12 @@ class Testbed():
                     img = cam.augmentAruco(bbox.astype(int), id, img, self.augDics[int(id)])
                 # save position
                 id = int(id)
+
                 theta = misc.angle_correction(bbox)  # get the angle value
-                self.poses[0, id-1] = tvec[n, 0, 0]
-                self.poses[1, id-1] = tvec[n, 0, 1]
-                self.poses[2, id-1] = theta
+                if id <= size :
+                    self.poses[0, id-1] = tvec[n, 0, 0]
+                    self.poses[1, id-1] = tvec[n, 0, 1]
+                    self.poses[2, id-1] = theta
 
                 # print text on the video cam
                 # str_position = "id=%0.0f x=%0.1f y=%0.1f theta=%0.2f" % (id, tvec[n, 0, 0], tvec[n, 0, 1], theta)
@@ -298,6 +309,8 @@ class Testbed():
         # --- Display the frame
         cv2.imshow("Image", img)
 
+        if self.record_video_bool:
+            self.video.write(img)
 
         return self.poses
 
@@ -321,6 +334,8 @@ class Testbed():
         else:
             print('\033[1;32;40m No errors in your simulation! Acceptance of your experiment is likely!   \033[0m ')
 
+        if self.record_video_bool:
+            self.video.release()
         self.esp8266.close()
         self.cap.release()
         cv2.destroyAllWindows()
@@ -340,27 +355,60 @@ class Testbed():
         self._errors = self._validate()
         self._iterations += 1
         
-        dataControl = str(self.number_of_robots)  # numero de marcadores
+        
+        dataControl = str(self.number_of_robots)  # numero de marcaplidores
         dataControl += '\n'
 
         r, g, b = (0, 0, 10)
         for id in range(self.number_of_robots):
-            dataControl += "%0.0f; %0.1f; %0.1f; %0.1f; %0.1f; %0.1f" % (id+1, self.velocities[0,id], self.velocities[1,id], r, g, b) + '\n'
-            # dataControl += "%0.0f; %0.0f; %0.0f; %0.0f; %0.0f; %0.0f;" % (id, 1 * 200, 1 * 2, r, g, b) + '\n'
-        
-        # dataControl += "%0.0f; %0.0f; %0.0f; %0.0f; %0.0f; %0.0f;" % (nm, 1*vOutPut[nm-1],  1*wOutPut[nm-1], red, green, blue) + '\n'
+            dataControl += "%0.0f; %0.0f; %0.0f; %0.0f; %0.0f; %0.0f" % (id+1, self.velocities[0,id], self.velocities[1,id], r, g, b) + '\n'
 
-        dataControl += 'xxF'
-        datos = dataControl.encode("utf-8")
-        self.esp8266.write(datos)
-        print(datos)
-        
+        if self.number_of_robots<6:
+            dataControl = str(self.number_of_robots)  # numero de marcaplidores
+            dataControl += '\n'
+
+            r, g, b = (0, 0, 10)
+            for id in range(self.number_of_robots):
+                dataControl += "%0.0f; %0.0f; %0.0f; %0.0f; %0.0f; %0.0f" % (id+1, self.velocities[0,id], self.velocities[1,id], r, g, b) + '\n'
+            dataControl += 'xxF'
+            
+            self.esp8266.write(dataControl.encode("utf-8"))
+            print(dataControl)
+            
+        else:
+            dataControl = str(6) +'\n'  # numero de marcaplidores
+            dataControl2 = str(self.number_of_robots -6) +'\n'
+
+            r, g, b = (0, 0, 10)
+            for id in range(6):
+                dataControl += "%0.0f; %0.0f; %0.0f; %0.0f; %0.0f; %0.0f" % (id+1, self.velocities[0,id], self.velocities[1,id], r, g, b) + '\n'
+            dataControl += 'xxF'
+
+            for id in range(6, self.number_of_robots):
+                dataControl2 += "%0.0f; %0.0f; %0.0f; %0.0f; %0.0f; %0.0f" % (id+1, self.velocities[0,id], self.velocities[1,id], r, g, b) + '\n'
+            dataControl2 += 'xxF'
+
+            # datos = dataControl.encode("utf-8")
+            self.esp8266.write(dataControl.encode("utf-8"))
+            self.esp8266_2.write(dataControl2.encode("utf-8"))
+            print('datos1', dataControl)
+            print('datos2', dataControl2)
+                    
 
 
     def draw_point(self,goals):
-        assert isinstance(goals,np.ndarray), "The Goals array argument provided to show in screen the target must be a numpy ndarray. Recieved type %r." % type(initial_conditions).__name__
+        assert isinstance(goals,np.ndarray), "The Goals array argument provided to show in screen the target must be a numpy ndarray. Recieved type %r." % type(goals).__name__
         # assert initial_conditions.shape == (3, number_of_robots), "Initial conditions provided when creating the Testbed object must of size 3xN, where N is the number of robots used. Expected a 3 x %r array but recieved a %r x %r array." % (number_of_robots, initial_conditions.shape[0], initial_conditions.shape[1])
 
         self.goals = goals
         self.d_points = True        
+    
+    def record_video(self, filename):
+        self.record_video_bool = True
+        print('filename', filename)
+        print('fps', self.fps)
+        self.video = cv2.VideoWriter("/home/nestor/Desktop/Github/Testbed/Videos/" + filename+ ".avi" , cv2.VideoWriter_fourcc(*"XVID"), self.fps ,(self.WIDTH,self.HEIGHT))
+            
+        
+        
         

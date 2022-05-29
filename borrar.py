@@ -12,7 +12,7 @@ import time
 # Instantiate Robotarium object
 N = 6
 x = np.array([])
-load_position, _ = misc.load_data_matlab('myData.mat', frac_data = 10)
+load_position, _ = misc.load_data_matlab('myData2.mat', frac_data = 3)
 load_position(0)
 # x = np.append(x, np.transpose([3, 1]))
 # # print()
@@ -20,6 +20,6 @@ load_position(0)
 # x = np.append(x, [4, 1])
 # # print()
 # print(x)
-cache = {'int_err_v': np.zeros(N), 'int_err_w':np.zeros(N)}
-cache['int_err_v'][1] += 1
-print(cache['int_err_v'][1] )   
+# cache = {'int_err_v': np.zeros(N), 'int_err_w':np.zeros(N)}
+# cache['int_err_v'][1] += 1
+# print(cache['int_err_v'][1] )   

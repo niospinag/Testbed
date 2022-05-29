@@ -27,6 +27,7 @@ class Testbed():
         
         #Check user input ranges/sizes
         assert (number_of_robots >= 0 and number_of_robots <= 50), "Requested %r robots to be used when creating the Robotarium object. The deployed number of robots must be between 0 and 50." % number_of_robots 
+        print('initial conditiontion shape' , initial_conditions.shape)
         if (initial_conditions.size > 0):
             assert initial_conditions.shape == (3, number_of_robots), "Initial conditions provided when creating the Robotarium object must of size 3xN, where N is the number of robots used. Expected a 3 x %r array but recieved a %r x %r array." % (number_of_robots, initial_conditions.shape[0], initial_conditions.shape[1])
 
@@ -134,7 +135,7 @@ class Testbed():
 
 
     def set_velocities(self, ids, velocities):
-        assert isinstance(velocities , np.ndarray), "The velocities hs to be an np.array in set_velocities() function %r." % type(initial_conditions).__name__
+        assert isinstance(velocities , np.ndarray), "The velocities has to be an np.array in set_velocities() function %r." % type(velocities).__name__
         
         # Threshold linear velocities
         idxs = np.where( np.abs(velocities[0, :]) > self.max_linear_velocity )
@@ -263,6 +264,7 @@ class Testbed():
         # Ensure angles are wrapped
         self.poses[2, :] = np.arctan2(np.sin(self.poses[2, :]), np.cos(self.poses[2, :]))
 
+        
         # update graphics
         self.visual.step(self.poses, [] , [])
 

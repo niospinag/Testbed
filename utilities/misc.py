@@ -93,7 +93,7 @@ def at_position(states, points, position_error=0.02):
     #Check user input ranges/sizes
     assert states.shape[0] == 3, "In the at_position function, the dimension of the state of each robot (states) must be 3. Recieved %r." % states.shape[0]
     assert points.shape[0] == 2, "In the at_position function, the dimension of the checked position for each robot (points) must be 2. Recieved %r." % points.shape[0]
-    assert states.shape[1] == poses.shape[1], "In the at_position function, the number of checked points (points) must match the number of robot states provided (states). Recieved a state array of size %r x %r and desired pose array of size %r x %r." % (states.shape[0], states.shape[1], points.shape[0], points.shape[1])
+    assert states.shape[1] == points.shape[1], "In the at_position function, the number of checked points (points) must match the number of robot states provided (states). Recieved a state array of size %r x %r and desired pose array of size %r x %r." % (states.shape[0], states.shape[1], points.shape[0], points.shape[1])
 
     # Calculate position errors
     pes = np.linalg.norm(states[:2, :] - points, 2, 0)
@@ -147,21 +147,24 @@ def load_data_matlab(filename = '', frac_data=0):
     assert isinstance(frac_data, int), "In the load_data_matlab function, the argument must be an integer with the number of the subdata needed between 2 points. Recieved type %r." % type(filename).__name__
     
     # mat = spio.loadmat('myData.mat', squeeze_me=True)
-    mat = spio.loadmat(filename, squeeze_me=True)
+    mat = spio.loadmat(filename , squeeze_me=True)
 
-    shift_x = -100
-    scale_x = 1.5
+    shift_x = -70
+    scale_x = 2
 
-    shift_y = -50
-    scale_y = 20
+    shift_y = -90
+    scale_y = 24
 
     vhist = mat['vhist']  # structures need [()]
     vphist = mat['vphist']
     hist_pos = mat['hist_pos']
-    zhist = mat['zhist']
+    zhist = mat['zhist'] 
+    # zhist.astype=(float)
     # zphist = mat['zphist'] * scale_y + shift_y
-    print('zhist', type(zhist))
-    T = mat['T']
+    print('zhist', zhist.shape)
+    print('hist_pos', hist_pos.shape)
+    
+    # T = mat['T']
     N = hist_pos.shape[0]
     horizon = hist_pos.shape[1]
 
@@ -169,10 +172,11 @@ def load_data_matlab(filename = '', frac_data=0):
         x_pos = np.zeros(( N , (horizon-1)*frac_data ))
         y_pos = np.zeros(( N , (horizon-1)*frac_data ))
         
-        for j in range(horizon-1):
 
-            dty = zhist[:,j+1] -    zhist[:,j]
-            dty = dty / (-255*frac_data)
+        for j in range(horizon-1):
+            
+            dty = zhist[:,j+1].astype(float) -    zhist[:,j].astype(float)
+            dty = dty / (frac_data)
 
             dtx = (hist_pos[:,j+1] - hist_pos[:,j]) / frac_data
             # print('dty',dty)
@@ -180,8 +184,9 @@ def load_data_matlab(filename = '', frac_data=0):
             for k in range(frac_data):
                 x_pos[:, j*frac_data + k] = hist_pos[:,j] + k*dtx
                 y_pos[:, j*frac_data + k] = zhist[:,j] +  k*dty
-                print(f'x_pos {j*frac_data + k}', x_pos[:, j*frac_data + k] )
-                print(f'y_pos {j*frac_data + k}', y_pos[:, j*frac_data + k] )
+
+                # print(f'x_pos {j*frac_data + k}', x_pos[ag, j*frac_data + k] )
+                # print(f'y_pos {j*frac_data + k}', y_pos[ag, j*frac_data + k] )
         # print(x_pos.shape, y_pos.shape)
         # print(x_pos[:,200:])
 
@@ -191,9 +196,9 @@ def load_data_matlab(filename = '', frac_data=0):
         print(x_pos.shape, y_pos.shape)
 
     def position(i):
-
-        pos = np.array([x_pos[:, i]*scale_x + shift_x,  y_pos[:, i]*scale_y+shift_y, np.zeros((6))])
-        
+        # pos = [x_pos[:, i]*scale_x + shift_x,  y_pos[:, i]*scale_y+shift_y, np.zeros((6))]
+        pos = np.array([x_pos[:, i]*scale_x + shift_x,  y_pos[:, i]*scale_y+shift_y, np.zeros((N))])
+        print('pos', pos)
         return pos
 
     def get_future_pos(i):

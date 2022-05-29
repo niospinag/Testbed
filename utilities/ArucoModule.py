@@ -106,6 +106,10 @@ def draw_axis(img, height, width, color=(100, 100, 100)):
     img[int(height / 2 - 0) - 1:int(height / 2 - 0), :] = color
     return img
 
+
+
+
+
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 def main():
@@ -140,10 +144,11 @@ def main():
                     if int(id) in augDics.keys():
                         img = augmentAruco(bbox.astype(int), id, img, augDics[int(id)])
                     # save position
-                    theta = msc.angle_correction(bbox)  # get the angle value
-                    position[0, id - 1] = tvec[n, 0, 0]
-                    position[1, id - 1] = tvec[n, 0, 1]
-                    position[2, id - 1] = theta
+                    if id <= position.shape[1] :
+                        theta = msc.angle_correction(bbox)  # get the angle value
+                        position[0, id - 1] = tvec[n, 0, 0]
+                        position[1, id - 1] = tvec[n, 0, 1]
+                        position[2, id - 1] = theta
 
             cv2.imshow("Image", img)
             # cv2.waitKey(1)

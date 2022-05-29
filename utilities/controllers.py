@@ -217,8 +217,172 @@ def create_hybrid_unicycle_pose_controller(linear_velocity_gain=1, angular_veloc
 
 
     
-# def create_pid_unicycle_pose_controlle(proportional_gain=10, differential_gain=1, integral_gain = 1):
-def create_pid_unicycle_pose_controlle(linear_gain = [15, 0, 0], angular_gain = [16, 0, 0], num_robots = 1):
+def create_pid_unicycle_position_controller(linear_gain = [15, 0, 0], angular_gain = [16, 0, 0], num_robots = 1):
+    """Returns a controller ($u: \mathbf{R}^{3 \times N} \times \mathbf{R}^{3 \times N} \to \mathbf{R}^{2 \times N}$) 
+    that will drive a unicycle-modeled agent to a pose (i.e., position & orientation). This control is based on a PID controller.
+    -> function
+    """
+
+    kp_v, ki_v, kd_v = linear_gain
+    kp_w, ki_w, kd_w = angular_gain
+
+    # cache = {'int_err_v': np.zeros(num_robots), 'int_err_w': np.zeros(num_robots), \
+    #          'rate_err_v': np.zeros(num_robots), 'rate_err_w': np.zeros(num_robots), \
+    #              'last_err_v': np.zeros(num_robots), 'last_err_w': np.zeros(num_robots), 'prev_time': time.time() }
+
+    integralErrorV = np.zeros(num_robots)
+    integralErrorW = np.zeros(num_robots)
+    rate_err_v = np.zeros(num_robots)
+    rate_err_w = np.zeros(num_robots)
+    last_err_v = np.zeros(num_robots)
+    last_err_w = np.zeros(num_robots)
+
+    prev_time = time.time()
+
+
+    def control_PID(states, poses): # , cache = cache):
+        ''' states: 3xN numpy array (of unicycle states, [x;y;theta])
+            poses: 3xN numpy array (of desired positons, [x_goal;y_goal ; tetha_goal])
+
+            -> 2xN numpy array (of unicycle control inputs)
+        '''
+
+        # global prev_time
+        N_states = states.shape[1]
+        dxu = np.zeros((2,N_states))
+        now = time.time()
+        # dt = now - prev_time
+        dt = 0.2
+        print('dt' , dt)
+        # prev_time = 1*now
+        for i in range(N_states):
+        # correction of the angle
+            targ_angle = math.atan2(poses[1,i]-states[1,i] , poses[0,i]-states[0,i])
+            
+            err_w = targ_angle - states[2,i] # error between the robot and target
+            err_v = np.sqrt((poses[0,i] - states[0,i])**2 + (poses[1,i] - states[1,i])**2)
+            # e_dist = np.linalg.norm(states[:2,i] - poses[:2,i])
+                    
+
+            if(err_w< -np.pi):
+                err_w=2*np.pi+ err_w
+            if(err_w > np.pi):
+                err_w = -2*np.pi + err_w
+            
+            
+            # if(np.abs(err_w)<(0.4)): #0.2
+            #     err_w = 0
+            
+            if(err_v < 7):
+                err_w = poses[2,i] - states[2,i]
+                err_v=0
+                integralErrorV[i]=0
+                # last_err_v[i]=0
+            
+            integralErrorV[i] += err_v*dt
+            integralErrorW[i] += err_w*dt
+            rate_err_v[i] = ( err_v - last_err_v[i] )/dt
+            rate_err_w[i] = ( err_w - last_err_w[i] )/dt
+
+            
+            
+            
+            # antibounding
+            integralErrorV[i]= min(integralErrorV[i] , 45)
+            integralErrorW[i]= min(integralErrorW[i] , 35)
+            last_err_v[i] = err_v
+            last_err_w[i] = err_w
+
+            dxu[0,i] = kp_v*err_v + ki_v* integralErrorV[i] + kd_v * rate_err_v[i] 
+            dxu[1,i] = kp_w*err_w + ki_w* integralErrorW[i] + kd_w * rate_err_w[i]
+
+
+        return  dxu
+        
+
+    return control_PID
+
+
+def create_pid_unicycle_pose_controller(linear_gain = [15, 0, 0], angular_gain = [16, 0, 0], num_robots = 1):
+    """Returns a controller ($u: \mathbf{R}^{3 \times N} \times \mathbf{R}^{3 \times N} \to \mathbf{R}^{2 \times N}$) 
+    that will drive a unicycle-modeled agent to a pose (i.e., position & orientation). This control is based on a PID controller.
+    -> function
+    """
+
+    kp_v, ki_v, kd_v = linear_gain
+    kp_w, ki_w, kd_w = angular_gain
+
+    integralErrorV = np.zeros(num_robots)
+    integralErrorW = np.zeros(num_robots)
+    rate_err_v = np.zeros(num_robots)
+    rate_err_w = np.zeros(num_robots)
+    last_err_v = np.zeros(num_robots)
+    last_err_w = np.zeros(num_robots)
+
+    prev_time = time.time()
+
+
+    def control_PID(states, poses): # , cache = cache):
+        ''' states: 3xN numpy array (of unicycle states, [x;y;theta])
+            poses: 3xN numpy array (of desired positons, [x_goal;y_goal ; tetha_goal])
+
+            -> 2xN numpy array (of unicycle control inputs)
+        '''
+
+        
+        N_states = states.shape[1]
+        dxu = np.zeros((2,N_states))
+
+        now = time.time()
+        # dt = now - prev_time
+        # prev_time = now
+        dt = 0.2
+        for i in range(N_states):
+        # correction of the angle
+            targ_angle = math.atan2(poses[1,i]-states[1,i] , poses[0,i]-states[0,i])
+            
+            err_w = targ_angle - states[2,i] # error between the robot and target
+            err_v = np.sqrt((poses[0,i] - states[0,i])**2 + (poses[1,i] - states[1,i])**2)
+            # e_dist = np.linalg.norm(states[:2,i] - poses[:2,i])
+        
+            if(err_w< -np.pi):
+                err_w=2*np.pi+ err_w
+            if(err_w > np.pi):
+                err_w = -2*np.pi + err_w
+            
+            
+            # if(np.abs(err_w)<(0.4)): #0.2
+            #     err_w = 0
+            
+            
+            integralErrorV[i] += err_v*dt
+            integralErrorW[i] += err_w*dt
+            rate_err_v[i] = ( err_v - last_err_v[i] )/dt
+            rate_err_w[i] = ( err_w - last_err_w[i] )/dt
+
+            
+            if(abs(err_v)<7):
+                err_v=0
+            
+            # antibounding
+            integralErrorV[i]= min(integralErrorV[i] , 45)
+            integralErrorW[i]= min(integralErrorW[i] , 35)
+            last_err_v[i] = err_v
+            last_err_w[i] = err_w
+
+            dxu[0,i] = kp_v*err_v + ki_v* integralErrorV[i] + kd_v * rate_err_v[i] 
+            dxu[1,i] = kp_w*err_w + ki_w* integralErrorW[i] + kd_w * rate_err_w[i]
+
+
+
+
+        return  dxu
+        
+
+    return control_PID
+
+
+def create_reactive_pose_controller(linear_gain = [15, 0, 0], angular_gain = [16, 0, 0], num_robots = 1):
     """Returns a controller ($u: \mathbf{R}^{3 \times N} \times \mathbf{R}^{3 \times N} \to \mathbf{R}^{2 \times N}$) 
     that will drive a unicycle-modeled agent to a pose (i.e., position & orientation). This control is based on a PID controller.
 
@@ -229,90 +393,68 @@ def create_pid_unicycle_pose_controlle(linear_gain = [15, 0, 0], angular_gain = 
 
     -> function
     """
+    controller_pid = create_pid_unicycle_position_controller(linear_gain = linear_gain, angular_gain = angular_gain, num_robots = num_robots)
 
-    kp_v, ki_v, kd_v = linear_gain
 
-    kp_w, ki_w, kd_w = angular_gain
 
-    cache = {'int_err_v': np.zeros(num_robots), 'int_err_w': np.zeros(num_robots), \
-             'rate_err_v': np.zeros(num_robots), 'rate_err_w': np.zeros(num_robots), \
-                 'last_err_v': np.zeros(num_robots), 'last_err_w': np.zeros(num_robots), 'prev_time': time.time() }
+    def find_nearest_robot(states, id):
 
-    def control_PID(states, poses , cache = cache):
-        ''' states: 3xN numpy array (of unicycle states, [x;y;theta])
-            poses: 3xN numpy array (of desired positons, [x_goal;y_goal ; tetha_goal])
+        distances = np.transpose(states[:2,:]) - states[:2,id] 
+        array = np.linalg.norm(distances,axis=1)
+        array = np.asarray(array)
+        near_value = np.abs(array - array[id])
+        near_value[id] += 1000
+        idx = (near_value).argmin()
+        # vector_norm = distances[idx]/near_value[id]
+        return states[:2,idx], idx
 
-            -> 2xN numpy array (of unicycle control inputs)
-        '''
 
-        # global deltaTime  # use of the global variables
-        # global eantX, eantY, integralErrorY, integralErrorX
-        # global controlSignals
-        
-        N_states = states.shape[1]
-        dxu = np.zeros((2,N_states))
-        #  get cache values
-        integralErrorV = cache['int_err_v']
-        integralErrorW = cache['int_err_w']
-        rate_err_v = cache['rate_err_v']
-        rate_err_w = cache['rate_err_w']
-        last_err_v = cache['last_err_v']
-        last_err_w = cache['last_err_w']
-        now = time.time()
-        dt = now - cache['prev_time']
-        # dt = 0.1 # <----------------------------
-        for i in range(N_states):
-        # correction of the angle
-            targ_angle = math.atan2(poses[1,i]-states[1,i] , poses[0,i]-states[0,i])
-            
-            err_w = targ_angle - states[2,i] # error between the robot and target
-            err_v = np.sqrt((poses[0,i] - states[0,i])**2 + (poses[1,i] - states[1,i])**2)
-            # e_dist = np.linalg.norm(states[:2,i] - poses[:2,i])
-            # print('der error ',rate_err_w)
-            # print('dt', dt)
+    def control_poses(states, poses): # , cache = cache):
+            ''' states: 3xN numpy array (of unicycle states, [x;y;theta])
+                poses: 3xN numpy array (of desired positons, [x_goal;y_goal ; tetha_goal])
 
-            if(err_w< -np.pi):
-                err_w=2*np.pi+ err_w
-            if(err_w > np.pi):
-                err_w = -2*np.pi + err_w
-            
-            # err_w = err_w % 360
-            
-            if(np.abs(err_w)<(0.2)): #0.2
-                err_w = 0
-            
-            # print(err_v)
-            
-            integralErrorV[i] += err_v*dt
-            integralErrorW[i] += err_w*dt
-            rate_err_v[i] = ( err_v - last_err_v[i] )/dt
-            rate_err_w[i] = ( err_w - last_err_w[i] )/dt
+                -> 2xN numpy array (of unicycle control inputs)
+            '''
+            # print('states array', states)
+            # print('poses array', poses)
 
             
-            if(err_v<3):
-                err_v=0
-            
-            # antibounding
-            integralErrorV[i]= min(integralErrorV[i] , 45)
-            integralErrorW[i]= min(integralErrorW[i] , 5)
+            N_states = states.shape[1]
+            new_goal = np.zeros((3,N_states))
+            dxu = np.zeros((2,N_states))
 
-            dxu[0,i] = kp_v*err_v + ki_v* integralErrorV[i] + kd_v * rate_err_v[i] 
-            dxu[1,i] = kp_w*err_w + ki_w* integralErrorW[i] + kd_w * rate_err_w[i]
+            # now = time.time()
+            # dt = now - prev_time
 
-        # update cache
-        cache['last_err_v'], cache['last_err_w'] = err_v, err_w
+            for i in range(N_states):
+                if (states[:2,i] - poses[:2,i]).any():
+                    #find the closest neightbors
+                    
+                    
+                    state_rb, idx = find_nearest_robot(states, i)
+                    vect_obs = state_rb - states[:2, i] 
+                    # print('vect_obs', vect_obs)
+                    vect_obs_norm = vect_obs/ np.linalg.norm(vect_obs)
+                    vect_goal = poses[:2,i]- states[:2,i]
+                    vect_goal_norm = vect_goal/np.linalg.norm(vect_goal)
+                    direction = 0.6* vect_goal_norm - 0.4*vect_obs_norm
+                    
+                    if  np.linalg.norm(vect_obs) < 25: #np.linalg.norm(vect_goal) > 10 or
+                        
+                        new_goal[:,i] = states[:,i]+np.append(direction*40, 0)
+                    
+                    else:
+                        new_goal[:,i] = poses[:,i]                        
 
-        cache['int_err_v'] = integralErrorV
-        cache['int_err_w'] = integralErrorW
-        cache['rate_err_v'] = rate_err_v
-        cache['rate_err_v'] = rate_err_w
-        cache['prev_time'] = now
-        cache['last_err_v'] = last_err_v
-        cache['last_err_w'] = last_err_w
+                    
+
+                else:
+                    print(f'the vehicle {i+1} is in the goal')
+
+                # controller_pid(states, new_goal)
+
+            return  controller_pid(states, new_goal)
+    
 
 
-
-        return  dxu, cache
-        
-
-    return control_PID
+    return control_poses
