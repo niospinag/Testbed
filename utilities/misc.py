@@ -149,11 +149,11 @@ def load_data_matlab(filename = '', frac_data=0):
     # mat = spio.loadmat('myData.mat', squeeze_me=True)
     mat = spio.loadmat(filename , squeeze_me=True)
 
-    shift_x = -70
-    scale_x = 2
+    shift_x = -120
+    scale_x = 1.5
 
-    shift_y = -90
-    scale_y = 24
+    shift_y = -85
+    scale_y = 25
 
     vhist = mat['vhist']  # structures need [()]
     vphist = mat['vphist']
@@ -173,7 +173,8 @@ def load_data_matlab(filename = '', frac_data=0):
         y_pos = np.zeros(( N , (horizon-1)*frac_data ))
         
 
-        for j in range(horizon-1):
+        for j in np.arange( 0 , horizon-1, 1):
+            print(j)
             
             dty = zhist[:,j+1].astype(float) -    zhist[:,j].astype(float)
             dty = dty / (frac_data)

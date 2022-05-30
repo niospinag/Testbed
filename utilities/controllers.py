@@ -253,7 +253,7 @@ def create_pid_unicycle_position_controller(linear_gain = [15, 0, 0], angular_ga
         now = time.time()
         # dt = now - prev_time
         dt = 0.2
-        print('dt' , dt)
+        # print('dt' , dt)
         # prev_time = 1*now
         for i in range(N_states):
         # correction of the angle
@@ -273,7 +273,7 @@ def create_pid_unicycle_position_controller(linear_gain = [15, 0, 0], angular_ga
             # if(np.abs(err_w)<(0.4)): #0.2
             #     err_w = 0
             
-            if(err_v < 7):
+            if(err_v < 10):
                 err_w = poses[2,i] - states[2,i]
                 err_v=0
                 integralErrorV[i]=0
@@ -362,7 +362,8 @@ def create_pid_unicycle_pose_controller(linear_gain = [15, 0, 0], angular_gain =
 
             
             if(abs(err_v)<7):
-                err_v=0
+                err_w=0
+                integralErrorW[i] = 0
             
             # antibounding
             integralErrorV[i]= min(integralErrorV[i] , 45)
@@ -439,9 +440,9 @@ def create_reactive_pose_controller(linear_gain = [15, 0, 0], angular_gain = [16
                     vect_goal_norm = vect_goal/np.linalg.norm(vect_goal)
                     direction = 0.6* vect_goal_norm - 0.4*vect_obs_norm
                     
-                    if  np.linalg.norm(vect_obs) < 25: #np.linalg.norm(vect_goal) > 10 or
+                    if  np.linalg.norm(vect_obs) < 15: #np.linalg.norm(vect_goal) > 10 or
                         
-                        new_goal[:,i] = states[:,i]+np.append(direction*40, 0)
+                        new_goal[:,i] = states[:,i]+np.append(direction*50, 0)
                     
                     else:
                         new_goal[:,i] = poses[:,i]                        

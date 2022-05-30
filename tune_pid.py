@@ -33,8 +33,8 @@ goal_points = initial_conditions* [[-1], [1], [-1]]
 # Create unicycle pose controller
 data = {}
 
-for kp in np.arange(7, 15, 1):
-    for ki in np.arange(0, 4, 0.5):
+for kp in np.arange(10, 17, 1):
+    for ki in np.arange(0, 2, 0.5):
 
 # for kv_i in range(20):
 #     for kw_i in range(4):
@@ -49,9 +49,7 @@ for kp in np.arange(7, 15, 1):
         stay_time = 0
         # try:
         # if True:
-        # cache = {'int_err_v': np.zeros(N), 'int_err_w': np.zeros(N), \
-        #         'rate_err_v': np.zeros(N), 'rate_err_w': np.zeros(N), \
-        #             'last_err_v': np.zeros(N), 'last_err_w': np.zeros(N), 'prev_time': time.time() }
+
         at_position = 0
         initial_time = time.time()
         while (at_position != N) or (stay_time < 10):
@@ -78,7 +76,7 @@ for kp in np.arange(7, 15, 1):
             else:
                 stay_time = 0
 
-            if time.time()-initial_time > 25:
+            if time.time()-initial_time > 30:
                 break
             
             at_position = np.size(misc.at_pose(x, goal_points, position_error=10, rotation_error=0.3) )

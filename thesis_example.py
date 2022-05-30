@@ -11,22 +11,23 @@ import numpy as np
 import time
 
 # Instantiate Robotarium object
-N = 8
-sim_name = f'data_{N}v_5N'
-load_position, _ = misc.load_data_matlab('data/'+sim_name+ '.mat' , frac_data = 15)
+N = 12
+sim_name = f'nrestricted_{N}v_7N'
+load_position, _ = misc.load_data_matlab('data/'+sim_name+ '.mat' , frac_data = 10)
 
-initial_conditions = load_position(10)
+iteration = 0 # 300
+initial_conditions = load_position(iteration)
 # initial_conditions = misc.generate_initial_conditions(N)
 r = Testbed(number_of_robots=N, show_figure=True, initial_conditions=initial_conditions, sim_in_real_time=False)
 
 # Define goal points by removing orientation from poses
-goal_points = load_position(0)
+goal_points = load_position(iteration)
 
-# r.record_video(sim_name)
+r.record_video(sim_name)
 
 # Create unicycle pose controller
 # unicycle_pose_controller = ctrl.create_clf_unicycle_position_controller(linear_velocity_gain=10, angular_velocity_gain=0.4)
-unicycle_pose_controller = ctrl.create_pid_unicycle_position_controller(linear_gain = [7, 0.1, 0.1], angular_gain = [14, 0.1 , 1], num_robots = N)
+unicycle_pose_controller = ctrl.create_pid_unicycle_pose_controller(linear_gain = [6, 0, 0], angular_gain = [10, 0.1 , 0.5], num_robots = N)
 # unicycle_pose_controller = ctrl.create_reactive_pose_controlle(linear_gain = [5, 0, 0.1], angular_gain = [10, 0 , 0.1], num_robots = N)
 
 # Create barrier certificates to avoid collision
@@ -39,7 +40,6 @@ r.step()
 # While the number of robots at the required poses is less
 # than N..f.
 
-iteration = 0
 # try:
 if True:
     # cache = {'int_err_v': np.zeros(N), 'int_err_w': np.zeros(N), \

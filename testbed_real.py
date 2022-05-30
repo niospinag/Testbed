@@ -47,7 +47,7 @@ class Testbed():
         self.robot_diameter = 20  #<===== check
         self.wheel_radius = 3  #<===== check
         self.base_length = 11  #<===== check
-        self.max_linear_velocity = 200  #<===== check
+        self.max_linear_velocity = 180  #<===== check
         self.max_angular_velocity = 45
         # self.max_angular_velocity = 2*(self.wheel_radius/self.robot_diameter)*(self.max_linear_velocity/self.wheel_radius)  #<===== check
         self.max_wheel_velocity = self.max_linear_velocity/self.wheel_radius  #<===== check
@@ -63,7 +63,7 @@ class Testbed():
         # self.controller = ctrl.create_clf_unicycle_position_controller(linear_velocity_gain=10, angular_velocity_gain=0.2)
         
         # self.controller = ctrl.create_pid_unicycle_position_controller(linear_gain = [10, 0, 0.2], angular_gain = [10, 0.1, 1], num_robots = self.number_of_robots)
-        self.controller = ctrl.create_reactive_pose_controller(linear_gain = [9, 0.1, 0.1], angular_gain = [10, 0.1 , 0.1], num_robots = self.number_of_robots)
+        self.controller = ctrl.create_reactive_pose_controller(linear_gain = [9, 0, 0], angular_gain = [10, 0.1 , 1], num_robots = self.number_of_robots)
 
         # self.visual = plb.Plotlab(number_of_robots=self.number_of_robots, show_figure=True, initial_conditions=self.initial_conditions, xf_pos = [], yf_pos= [])
 
@@ -139,8 +139,8 @@ class Testbed():
         N = self.number_of_robots
         print('max_vel', self.max_angular_velocity)
         self.max_angular_velocity = 45
-        for i in range(200):
-        # while ( np.size(misc.at_pose(x, final, position_error=10, rotation_error=0.2) ) != N):
+        # for i in range(400):
+        while ( np.size(misc.at_pose(x, final, position_error=10, rotation_error=0.2) ) != N):
             # Create safe control inputs (i.e., no collisions)
             self.draw_point(final)
             
@@ -167,7 +167,7 @@ class Testbed():
 
         self.d_points=False
             
-        input('Press ENTER to start the implementation')
+        input('\033[1;32;40m Press ENTER to start the implementation \033[0m \n')
 
 
     def set_velocities(self, ids, velocities):
@@ -330,7 +330,7 @@ class Testbed():
             if "collision" in self._errors:
                 print('\t \033[1;32;40m Simulation had {0} {1}  \033[0m \n'.format(self._errors["collision"], self._errors["collision_string"]))
             if "actuator" in self._errors:
-                print('\t \033[1;32;40m Simulation had {0} {1}  \033[0m Simulation had {0} {1} \n'.format(self._errors["actuator"], self._errors["actuator_string"]))
+                print('\t \033[1;32;40m Simulation had {0} {1}  \033[0m \n'.format(self._errors["actuator"], self._errors["actuator_string"]))
         else:
             print('\033[1;32;40m No errors in your simulation! Acceptance of your experiment is likely!   \033[0m ')
 
