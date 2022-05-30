@@ -60,8 +60,6 @@ if True:
         r.draw_point(goal_points)
         # dxu = unicycle_pose_controller(x, goal_points[:2,:])
         dxu = unicycle_pose_controller(x, goal_points) #, cache)
-        # Create safe control inputs (i.e., no collisions)
-        # dxu = uni_barrier_cert(dxu, x)
 
         # Set the velocities
         r.set_velocities(np.arange(N), dxu)
