@@ -13,21 +13,24 @@ import time
 # Instantiate Robotarium object
 N = 12
 sim_name = f'nrestricted_{N}v_7N'
-load_position, _ = misc.load_data_matlab('data/'+sim_name+ '.mat' , frac_data = 10)
+frac_data = 7 #3
+load_position, _ = misc.load_data_matlab('data/' + sim_name+ '.mat' , frac_data = frac_data)
 
-iteration = 0 # 300
+iteration = 5*frac_data # 300
+# iteration = 0
 initial_conditions = load_position(iteration)
+
 # initial_conditions = misc.generate_initial_conditions(N)
-r = Testbed(number_of_robots=N, show_figure=True, initial_conditions=initial_conditions, sim_in_real_time=False)
+r = Testbed(number_of_robots=N, show_figure = True, initial_conditions=initial_conditions, sim_in_real_time=False)
 
 # Define goal points by removing orientation from poses
 goal_points = load_position(iteration)
 
-r.record_video(sim_name)
+r.record_video('222sin_points2_10frac__' + sim_name)
 
 # Create unicycle pose controller
 # unicycle_pose_controller = ctrl.create_clf_unicycle_position_controller(linear_velocity_gain=10, angular_velocity_gain=0.4)
-unicycle_pose_controller = ctrl.create_pid_unicycle_pose_controller(linear_gain = [6, 0, 0], angular_gain = [10, 0.1 , 0.5], num_robots = N)
+unicycle_pose_controller = ctrl.create_pid_unicycle_pose_controller(linear_gain = [6, 0, 0], angular_gain = [17, 0.1 , 0.5], num_robots = N)
 # unicycle_pose_controller = ctrl.create_reactive_pose_controlle(linear_gain = [5, 0, 0.1], angular_gain = [10, 0 , 0.1], num_robots = N)
 
 # Create barrier certificates to avoid collision
@@ -57,7 +60,9 @@ if True:
         # goal_points = load_position(int(np.floor(iteration/10)))
         goal_points = load_position(iteration)
         # print('g_p',goal_points)
-        r.draw_point(goal_points)
+
+        # r.draw_point(goal_points)
+        
         # dxu = unicycle_pose_controller(x, goal_points[:2,:])
         dxu = unicycle_pose_controller(x, goal_points) #, cache)
 

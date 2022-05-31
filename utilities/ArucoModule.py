@@ -89,13 +89,13 @@ def augmentAruco(bbox, id, img, imgAug, drawId=True):
     # print(tl)
 
     if drawId:
-        cv2.putText(imgOut, str(id), tl, cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 255), 2)
+        cv2.putText(imgOut, str(id), tl, cv2.FONT_HERSHEY_PLAIN, 1, (255, 0, 255), 2)
 
     return imgOut
 
 
-def draw_point(img, position, width, height, color=(0, 200, 0)):
-    circle = np.ones((2, 2)) * 3 * position * [1, -1] + [width / 2, height / 2]
+def draw_point(img, position, width, height, color=(0, 200, 0), factor = 1):
+    circle = np.ones((2, 2)) * 3 * position * [1, -1] * factor + [width / 2, height / 2]
     circle = np.transpose(circle)
     # print the point
     cv2.polylines(img, [(np.transpose(circle)).astype(np.int32)], False, color, 7, cv2.LINE_AA)

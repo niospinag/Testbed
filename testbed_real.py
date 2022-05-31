@@ -47,7 +47,7 @@ class Testbed():
         self.robot_diameter = 20  #<===== check
         self.wheel_radius = 3  #<===== check
         self.base_length = 11  #<===== check
-        self.max_linear_velocity = 180  #<===== check
+        self.max_linear_velocity = 300  #<===== check
         self.max_angular_velocity = 45
         # self.max_angular_velocity = 2*(self.wheel_radius/self.robot_diameter)*(self.max_linear_velocity/self.wheel_radius)  #<===== check
         self.max_wheel_velocity = self.max_linear_velocity/self.wheel_radius  #<===== check
@@ -60,26 +60,12 @@ class Testbed():
         self.left_led_commands = []
         self.right_led_commands = []
 
-        # self.controller = ctrl.create_clf_unicycle_position_controller(linear_velocity_gain=10, angular_velocity_gain=0.2)
-        
-        # self.controller = ctrl.create_pid_unicycle_position_controller(linear_gain = [10, 0, 0.2], angular_gain = [10, 0.1, 1], num_robots = self.number_of_robots)
-        self.controller = ctrl.create_reactive_pose_controller(linear_gain = [9, 0, 0], angular_gain = [10, 0.1 , 1], num_robots = self.number_of_robots)
-
-        # self.visual = plb.Plotlab(number_of_robots=self.number_of_robots, show_figure=True, initial_conditions=self.initial_conditions, xf_pos = [], yf_pos= [])
-
-        # # Visualization
-        # self.figure = []
-        # self.axes = []
-        # self.left_led_patches = []
-        # self.right_led_patches = []
-        # self.chassis_patches = []
-        # self.right_wheel_patches = []
-        # self.left_wheel_patches = []
+        self.controller = ctrl.create_reactive_pose_controller(linear_gain = [9, 0.1, 0], angular_gain = [14, 0.1 , 1], num_robots = self.number_of_robots)
 
         # opencv parameters ///////////////////////////////////////////////////////
         exposure = -0
-        self.WIDTH = 1280 # 1280 // 1920  //1600 //1024 //640
-        self.HEIGHT = 720 # 720 // 1080  //896  // 576  //360
+        self.WIDTH = 1024 # 1280 // 1920  //1600 //1024 //640
+        self.HEIGHT = 576 # 720 // 1080  //896  // 576  //360
 
         self.cap = cv2.VideoCapture(0)
         self.img = None
@@ -87,7 +73,7 @@ class Testbed():
         self.marker_size = 10.2  # - [cm]
 
         self.cap.set(cv2.CAP_PROP_EXPOSURE, exposure)
-        self.camera_matrix, self.camera_distortion = cam.getCameraMatr("Camera", width=1280, height=720)
+        self.camera_matrix, self.camera_distortion = cam.getCameraMatr("Camera", width=1*self.WIDTH, height=1*self.HEIGHT)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.WIDTH)  
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.HEIGHT)  
         self.cap.set(cv2.CAP_PROP_FOCUS, 0)
@@ -149,25 +135,14 @@ class Testbed():
             self.set_velocities(np.arange(N),dxu)
 
             self.step()
-            # dataControl = str(self.number_of_robots) + '\n'  # numero de marcadores
-
-            # r, g, b = (5, 5, 5)
-
-            # for id in range(self.number_of_robots):
-            #     dataControl += "%0.0f; %0.0f; %0.0f; %0.0f; %0.0f; %0.0f" % (id+1, self.velocities[0,id], self.velocities[1,id], r, g, b) + '\n'
-            # # dataControl += "9; 0.0; 0.0; 255.0; 255.0; 255.0\n"
-
-            # dataControl += 'xxF'
-            # datos = dataControl.encode("utf-8")
-            # self.esp8266.write(datos)
-
-            # print(datos)
-
+            
             x=self.get_poses()
 
         self.d_points=False
-            
+
+        #     
         input('\033[1;32;40m Press ENTER to start the implementation \033[0m \n')
+        time.sleep(5)
 
 
     def set_velocities(self, ids, velocities):
@@ -275,6 +250,7 @@ class Testbed():
 
                 if int(id) in self.augDics.keys():
                     img = cam.augmentAruco(bbox.astype(int), id, img, self.augDics[int(id)])
+                
                 # save position
                 id = int(id)
 
@@ -303,8 +279,10 @@ class Testbed():
         cam.draw_axis(img, self.HEIGHT, self.WIDTH, color=(100, 100, 100))
         
         if self.d_points:
+            factor = int(14*(self.HEIGHT/self.WIDTH))/self.marker_size
+            # print('factor', factor)
             for i in range(self.number_of_robots): 
-                cam.draw_point(img, self.goals[:2,i], self.WIDTH, self.HEIGHT , color=(0, 200, 0))
+                cam.draw_point(img, self.goals[:2,i], self.WIDTH, self.HEIGHT , color=(0, 200, 0), factor= factor )
                
         # --- Display the frame
         cv2.imshow("Image", img)

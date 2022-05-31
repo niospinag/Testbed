@@ -149,11 +149,11 @@ def load_data_matlab(filename = '', frac_data=0):
     # mat = spio.loadmat('myData.mat', squeeze_me=True)
     mat = spio.loadmat(filename , squeeze_me=True)
 
-    shift_x = -120
-    scale_x = 1.5
+    shift_x = -200
+    scale_x = 1.3
 
     shift_y = -85
-    scale_y = 25
+    scale_y = 30
 
     vhist = mat['vhist']  # structures need [()]
     vphist = mat['vphist']
