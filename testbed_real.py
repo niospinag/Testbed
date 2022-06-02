@@ -28,7 +28,7 @@ class Testbed():
         assert isinstance(simulation,bool), "true simulation shows a virtual implementation of the current experiment, false simulation implement the experiment in the real life %r." % type(simulation).__name__
         
         #Check user input ranges/sizes
-        assert (number_of_robots >= 0 and number_of_robots <= 50), "Requested %r robots to be used when creating the Testbed object. The deployed number of robots must be between 0 and 50." % number_of_robots 
+        assert (number_of_robots >= 0 and number_of_robots <= 30), "Requested %r robots to be used when creating the Testbed object. The deployed number of robots must be between 0 and 50." % number_of_robots 
         
         self.number_of_robots = number_of_robots
         self.show_figure = show_figure
@@ -42,16 +42,15 @@ class Testbed():
         self.file_path = None
         self.current_file_size = 0
 
-        # Constants
+        '''Robot dimentions'''
         self.time_step = 0.033
-        self.robot_diameter = 20  #<===== check
-        self.wheel_radius = 3  #<===== check
-        self.base_length = 11  #<===== check
-        self.max_linear_velocity = 300  #<===== check
+        self.robot_diameter = 20  
+        self.wheel_radius = 3  
+        self.base_length = 11  
+        self.max_linear_velocity = 300  
         self.max_angular_velocity = 45
-        # self.max_angular_velocity = 2*(self.wheel_radius/self.robot_diameter)*(self.max_linear_velocity/self.wheel_radius)  #<===== check
-        self.max_wheel_velocity = self.max_linear_velocity/self.wheel_radius  #<===== check
-
+        # self.max_angular_velocity = 2*(self.wheel_radius/self.robot_diameter)*(self.max_linear_velocity/self.wheel_radius)  
+        self.max_wheel_velocity = self.max_linear_velocity/self.wheel_radius  
         self.robot_radius = self.robot_diameter/2
 
         self.velocities = np.zeros((2, number_of_robots))
@@ -89,6 +88,7 @@ class Testbed():
         self._iterations = 0 
 
         # initialize serial cominication
+        ''' in case of problems ----> sudo chmod 666 /dev/ttyUSB0 '''
         self.esp8266 = serial.Serial("/dev/ttyUSB0", 115200)
         if number_of_robots>6:
             self.esp8266_2 = serial.Serial("/dev/ttyUSB1", 115200)
@@ -128,7 +128,7 @@ class Testbed():
         # for i in range(400):
         while ( np.size(misc.at_pose(x, final, position_error=10, rotation_error=0.2) ) != N):
             # Create safe control inputs (i.e., no collisions)
-            self.draw_point(final)
+            self    .draw_point(final)
             
             # dxu= self.controller(x, final[:2,:])
             dxu= self.controller(x, final)
@@ -146,8 +146,7 @@ class Testbed():
 
 
     def set_velocities(self, ids, velocities):
-        # in case of problems ''' sudo chmod 666 /dev/ttyUSB0 '''
-
+        
         # Threshold linear velocities
         idxs = np.where( np.abs(velocities[0, :]) > self.max_linear_velocity )
         velocities[0, idxs] = self.max_linear_velocity*np.sign( velocities[0, idxs] )
@@ -260,6 +259,7 @@ class Testbed():
                     self.poses[1, id-1] = tvec[n, 0, 1]
                     self.poses[2, id-1] = theta
 
+                
                 # print text on the video cam
                 # str_position = "id=%0.0f x=%0.1f y=%0.1f theta=%0.2f" % (id, tvec[n, 0, 0], tvec[n, 0, 1], theta)
                 
