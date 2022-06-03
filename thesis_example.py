@@ -13,9 +13,10 @@ import time
 # Instantiate Robotarium object data 
 N = 12
 sim_name = f'nrestricted_{N}v_7N' #name of the simulation
-frac_data = 7 # how many points would you like to split the data
+split_data = 7 # how many points would you like to split the data
 #creates a function where give a specific point in the path
-load_position, _ = misc.load_data_matlab('data/' + sim_name+ '.mat' , frac_data = frac_data) 
+load_position = misc.load_data_matlab('data/' + sim_name+ '.mat' , \
+     split_data = split_data,shift_x=-200, scale_x=1.3, shift_y=-85, scale_y=30) 
 
 
 iteration = 0
