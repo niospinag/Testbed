@@ -13,6 +13,7 @@ import utilities.controllers as ctrl
 import cv2
 import cv2.aruco as aruco
 import utilities.ArucoModule as cam
+import os
 
 
 class Testbed():
@@ -102,8 +103,8 @@ class Testbed():
 
         # initialize serial cominication
         ''' in case of problems ----> sudo chmod 666 /dev/ttyUSB0 '''
-        self.esp8266 = serial.Serial("/dev/ttyUSB0", 115200)
-        if number_of_robots > 6:
+        self.esp8266 = serial.Serial("COM4", 115200)
+        if number_of_robots > 8:
             self.esp8266_2 = serial.Serial("/dev/ttyUSB1", 115200)
 
         if (initial_conditions.size > 0):
@@ -378,7 +379,7 @@ class Testbed():
             dataControl += "%0.0f; %0.0f; %0.0f; %0.0f; %0.0f; %0.0f" % (
             id + 1, self.velocities[0, id], self.velocities[1, id], r, g, b) + '\n'
 
-        if self.number_of_robots < 6:
+        if self.number_of_robots < 8:
             dataControl = str(self.number_of_robots)  # numero de marcaplidores
             dataControl += '\n'
 
@@ -435,5 +436,7 @@ class Testbed():
         self.record_video_bool = True
         print('filename', filename)
         print('fps', self.fps)
-        self.video = cv2.VideoWriter("/home/nestor/Desktop/Github/Testbed/Videos/" + filename + ".avi",
+        print("current file",os.getcwd())
+
+        self.video = cv2.VideoWriter(os.getcwd() +"/Videos/" + filename + ".avi",
                                      cv2.VideoWriter_fourcc(*"XVID"), self.fps, (self.WIDTH, self.HEIGHT))

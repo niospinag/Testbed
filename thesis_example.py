@@ -1,6 +1,6 @@
 '''this is an example of how to implement the testbed
 '''
-from testbed_virt import Testbed
+from testbed_real import Testbed
 import utilities.misc as misc 
 import utilities.barrier_certificates as brct
 import utilities.controllers as ctrl
@@ -12,8 +12,8 @@ import time
 
 # Instantiate Robotarium object data 
 N = 7 # numero de vehiculos
-data_name = f'data_{N}v_7N' #name of the simulation
-split_data = 5 # how many points would you like to split the data
+data_name = 'data_7v_7N' #name of the simulation
+split_data = 10 # how many points would you like to split the data
 #creates a function where give a specific point in the path
 load_position = misc.load_data_matlab('data/' + data_name+ '.mat' , \
      split_data = split_data,shift_x=0, scale_x=1, shift_y=0, scale_y=1) 
@@ -29,7 +29,7 @@ r = Testbed(number_of_robots=N, show_figure = True, initial_conditions=initial_c
 goal_points = load_position(iteration)
 
 # function to record video of camera
-# r.record_video('222sin_points2_10frac__' + sim_name)
+r.record_video('video_data_' + data_name)
 
 # Create controller to implement in the experiment
 unicycle_pose_controller = ctrl.create_pid_unicycle_pose_controller(linear_gain = [6, 0, 0], angular_gain = [17, 0.1 , 0.5], num_robots = N)
