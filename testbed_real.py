@@ -108,9 +108,7 @@ class Testbed():
             self.esp8266_2 = serial.Serial("/dev/ttyUSB1", 115200)
 
         if (initial_conditions.size > 0):
-            assert initial_conditions.shape == (3,
-                                                number_of_robots), "Initial conditions provided when creating the Testbed object must of size 3xN, where N is the number of robots used. Expected a 3 x %r array but recieved a %r x %r array." % (
-            number_of_robots, initial_conditions.shape[0], initial_conditions.shape[1])
+            assert initial_conditions.shape == (3,number_of_robots), "Initial conditions provided when creating the Testbed object must of size 3xN, where N is the number of robots used. Expected a 3 x %r array but recieved a %r x %r array." % (number_of_robots, initial_conditions.shape[0], initial_conditions.shape[1])
             # Move the vehicles to the initial conditions decired 
             print('moving to initial conditions')
             print(self.initial_conditions)

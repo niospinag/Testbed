@@ -9,7 +9,7 @@ import matplotlib.patches as patches
 
 import utilities.misc as misc
 
-# RobotariumABC: This is an interface for the Robotarium class that
+# TestbedABC: This is an interface for the Testbed class that
 # ensures the simulator and the robots match up properly.  
 
 # THIS FILE SHOULD NEVER BE MODIFIED OR SUBMITTED!
@@ -19,17 +19,17 @@ class Testbed():
     def __init__(self, number_of_robots=-1, show_figure=True, sim_in_real_time=True, initial_conditions=np.array([])):
 
         #Check user input types
-        assert isinstance(number_of_robots,int), "The number of robots used argument (number_of_robots) provided to create the Robotarium object must be an integer type. Recieved type %r." % type(number_of_robots).__name__
-        assert isinstance(initial_conditions,np.ndarray), "The initial conditions array argument (initial_conditions) provided to create the Robotarium object must be a numpy ndarray. Recieved type %r." % type(initial_conditions).__name__
-        assert isinstance(show_figure,bool), "The display figure window argument (show_figure) provided to create the Robotarium object must be boolean type. Recieved type %r." % type(show_figure).__name__
-        assert isinstance(sim_in_real_time,bool), "The simulation running at 0.033s per loop (sim_real_time) provided to create the Robotarium object must be boolean type. Recieved type %r." % type(sim_in_real_time).__name__
+        assert isinstance(number_of_robots,int), "The number of robots used argument (number_of_robots) provided to create the Testbed object must be an integer type. Recieved type %r." % type(number_of_robots).__name__
+        assert isinstance(initial_conditions,np.ndarray), "The initial conditions array argument (initial_conditions) provided to create the Testbed object must be a numpy ndarray. Recieved type %r." % type(initial_conditions).__name__
+        assert isinstance(show_figure,bool), "The display figure window argument (show_figure) provided to create the Testbed object must be boolean type. Recieved type %r." % type(show_figure).__name__
+        assert isinstance(sim_in_real_time,bool), "The simulation running at 0.033s per loop (sim_real_time) provided to create the Testbed object must be boolean type. Recieved type %r." % type(sim_in_real_time).__name__
         # assert isinstance(simulation,bool), "true simulation shows a virtual implementation of the current experiment, false simulation implement the experiment in the real life %r." % type(simulation).__name__
         
         #Check user input ranges/sizes
-        assert (number_of_robots >= 0 and number_of_robots <= 50), "Requested %r robots to be used when creating the Robotarium object. The deployed number of robots must be between 0 and 50." % number_of_robots 
+        assert (number_of_robots >= 0 and number_of_robots <= 50), "Requested %r robots to be used when creating the Testbed object. The deployed number of robots must be between 0 and 50." % number_of_robots 
         print('initial conditiontion shape' , initial_conditions.shape)
         if (initial_conditions.size > 0):
-            assert initial_conditions.shape == (3, number_of_robots), "Initial conditions provided when creating the Robotarium object must of size 3xN, where N is the number of robots used. Expected a 3 x %r array but recieved a %r x %r array." % (number_of_robots, initial_conditions.shape[0], initial_conditions.shape[1])
+            assert initial_conditions.shape == (3, number_of_robots), "Initial conditions provided when creating the Testbed object must of size 3xN, where N is the number of robots used. Expected a 3 x %r array but recieved a %r x %r array." % (number_of_robots, initial_conditions.shape[0], initial_conditions.shape[1])
 
 
         self.number_of_robots = number_of_robots
@@ -226,10 +226,10 @@ class Testbed():
     def call_at_scripts_end(self):
         """Call this function at the end of scripts to display potentail errors.  
         Even if you don't want to print the errors, calling this function at the
-        end of your script will enable execution on the Robotarium testbed.
+        end of your script will enable execution on the Testbed testbed.
         """
         print('##### DEBUG OUTPUT #####')
-        print('Your simulation will take approximately {0} real seconds when deployed on the Robotarium. \n'.format(math.ceil(self._iterations*0.033)))
+        print('Your simulation will take approximately {0} real seconds when deployed on the Testbed. \n'.format(math.ceil(self._iterations*0.033)))
 
         if bool(self._errors):
             if "boundary" in self._errors:
