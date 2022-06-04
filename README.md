@@ -14,11 +14,12 @@ en el archivo 'Testbed_real' es importante cambiar en la linea 81 el numero de l
 ``` python
         self.cap = cv2.VideoCapture(0)
 ```
+
 donde el numero representa que camara se piensa usar
 ex:
-0: frontal \
-1: trasera \
-2: externa \
+- 0: frontal 
+- 1: trasera 
+- 2: externa
 
 2. antenas de comunicacion
 para comunicarse con las antenas wifi es necesario especificar cuales son los puertos seriales de comunicacion.
