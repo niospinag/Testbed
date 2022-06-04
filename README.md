@@ -1,12 +1,7 @@
 # Testbed
 
-antes de Inicilizar el laboratorio es recomendable crear un virtual environment para evitar errores entre librerias, ademas, el laboratorio esta implementado en python 3.10 debido a su manejo optimo de errores
 
-## creacion de virtual environment con conda
- para crear el virtual env y cargar las dependencias es necesario correr el siguiente codigo
-  
-
-# datos a modificar en cada laboratorio
+## datos a modificar en cada laboratorio
 es necesario definir los puertos de comunicacion con las antenas y el numero de la camara que se va a usar
 
 1. camara
