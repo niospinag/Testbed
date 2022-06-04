@@ -12,10 +12,10 @@ import time
 
 # Instantiate Robotarium object data 
 N = 7 # numero de vehiculos
-sim_name = f'data_{N}v_7N' #name of the simulation
+data_name = f'data_{N}v_7N' #name of the simulation
 split_data = 0 # how many points would you like to split the data
 #creates a function where give a specific point in the path
-load_position = misc.load_data_matlab('data/' + sim_name+ '.mat' , \
+load_position = misc.load_data_matlab('data/' + data_name+ '.mat' , \
      split_data = split_data,shift_x=0, scale_x=1, shift_y=0, scale_y=1) 
 
 
