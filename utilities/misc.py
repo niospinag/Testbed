@@ -180,12 +180,6 @@ def load_data_matlab(filename='', split_data=0,  shift_x=-200, scale_x=1.3, shif
     # mat = spio.loadmat('myData.mat', squeeze_me=True)
     mat = spio.loadmat(filename, squeeze_me=True)
 
-    # shift_x = -200
-    # scale_x = 1.3
-
-    # shift_y = -85
-    # scale_y = 30
-
     vhist = mat['vhist']  # structures need [()]
     vphist = mat['vphist']
     hist_pos = mat['hist_pos']

@@ -13,7 +13,7 @@ import time
 # Instantiate Robotarium object data 
 N = 7 # numero de vehiculos
 data_name = f'data_{N}v_7N' #name of the simulation
-split_data = 0 # how many points would you like to split the data
+split_data = 5 # how many points would you like to split the data
 #creates a function where give a specific point in the path
 load_position = misc.load_data_matlab('data/' + data_name+ '.mat' , \
      split_data = split_data,shift_x=0, scale_x=1, shift_y=0, scale_y=1) 
@@ -47,7 +47,7 @@ try:
         x = r.get_poses()
         
         # get dynamic target
-        goal_points = load_position(int(iteration/10)) #<====== con esto relentizo el pointer para que vaya lento
+        goal_points = load_position(int(iteration/5)) #<====== con esto relentizo el pointer para que vaya lento
         
         r.draw_point(goal_points)
         
