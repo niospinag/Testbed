@@ -369,7 +369,7 @@ class Testbed():
         self._errors = self._validate()
         self._iterations += 1
 
-        dataControl = str(self.number_of_robots)  # numero de marcaplidores
+        dataControl = str(self.number_of_robots)  # numero de marcadores
         dataControl += '\n'
 
         r, g, b = (0, 0, 10)
@@ -378,7 +378,7 @@ class Testbed():
             id + 1, self.velocities[0, id], self.velocities[1, id], r, g, b) + '\n'
 
         if self.number_of_robots < 8:
-            dataControl = str(self.number_of_robots)  # numero de marcaplidores
+            dataControl = str(self.number_of_robots)  # numero de marcadores
             dataControl += '\n'
 
             r, g, b = (0, 0, 10)
@@ -391,7 +391,7 @@ class Testbed():
             print(dataControl)
 
         else:
-            dataControl = str(6) + '\n'  # numero de marcaplidores
+            dataControl = str(6) + '\n'  # numero de marcadores
             dataControl2 = str(self.number_of_robots - 6) + '\n'
 
             r, g, b = (0, 0, 10)
