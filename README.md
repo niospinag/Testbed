@@ -6,6 +6,11 @@
 
 > [🇪🇸 Versión en Español](#versión-en-español) | [🇬🇧 English Version](#english-version)
 
+<p align="center">
+  <!-- CAMBIA ESTO POR UN GIF DE TU PROYECTO FUNCIONANDO -->
+  <img src="assets/images/main_demo.gif" alt="Multi-Robot System Demo" width="800"/>
+</p>
+
 ---
 
 ## 🇬🇧 English Version
@@ -16,21 +21,22 @@ A comprehensive Python framework for simulating and deploying multi-robot contro
 
 - **🤖 Dual Operation Modes**: Seamless switching between Virtual Simulation and Real Hardware.
 - **👁️ Vision-Based Tracking**: Real-time pose estimation using ArUco markers and OpenCV.
-- **🎮 Modular Architecture**: Clean separation between core logic, hardware interfaces, and control algorithms.
 - **🛡️ Safety Mechanisms**: Barrier certificates for collision avoidance.
-- **📊 Multi-Robot Support**: Control up to 30 robots simultaneously.
 - **📈 Trajectory Tracking**: Load and follow predefined paths from MATLAB (`.mat`) data.
-- **🎥 Video Recording**: Automatic recording of experiments (ignores new files in Git).
+
+### 📸 Gallery: Virtual vs. Real
+
+| Virtual Simulation | Real Hardware Implementation |
+|:------------------:|:----------------------------:|
+| <!-- PON TU GIF DEL SIMULADOR AQUI --> <img src="assets/images/virtual_sim.gif" alt="Virtual Simulation" width="400"/> | <!-- PON TU GIF DEL ROBOT REAL AQUI --> <img src="assets/images/real_robot.gif" alt="Real Robots" width="400"/> |
+| *Gazebo-like 2D Python Simulator* | *Differential drive robots with ArUco markers* |
 
 ### 📋 Table of Contents
 
 - [Installation](#installation)
-- [Project Structure](#project-structure)
 - [Quick Start](#quick-start)
-- [Configuration](#configuration)
 - [Hardware Setup](#hardware-setup)
-- [Troubleshooting](#troubleshooting)
-- [Citation](#citation)
+- [Project Structure](#project-structure)
 
 ---
 
@@ -39,7 +45,7 @@ A comprehensive Python framework for simulating and deploying multi-robot contro
 ### Prerequisites
 
 - **Software**: Python 3.10+, pip, Git.
-- **Hardware** (optional): USB Camera, ESP8266 modules, Mobile robots (differential drive).
+- **Hardware** (optional): USB Camera, ESP8266 modules, Mobile robots.
 
 ### Setup Steps
 
@@ -51,139 +57,62 @@ cd testbed
 
 2. **Create a virtual environment**:
 ```bash
-# Linux/Mac
 python3 -m venv venv
-source venv/bin/activate
-
-# Windows
-python -m venv venv
-venv\Scripts\activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 ```
 
-3. **Install dependencies**:
+3. **Install package**:
 ```bash
 pip install -r requirements.txt
-```
-
-4. **Install the package in "Editable" mode (Recommended)**:
-   *This allows you to edit the code in `testbed/` and see changes immediately without reinstalling.*
-```bash
 pip install -e .
-```
-
----
-
-## 📂 Project Structure
-
-The project follows a modular package architecture:
-
-```text
-Testbed/
-├── assets/                 # Markers and static resources
-├── config/                 # Camera calibration files
-├── data/                   # Trajectories (.mat) and Results (.csv)
-├── examples/               # Ready-to-run scripts (Start here!)
-│   ├── basic_simulation.py # Main entry point example
-│   └── ...
-├── testbed/                # MAIN PACKAGE
-│   ├── config/             # Configuration classes (settings.py)
-│   ├── control/            # Controllers (PID, CLF) & Barriers
-│   ├── core/               # Base classes and Robot definitions
-│   ├── hardware/           # Real robot interface & Vision system
-│   ├── simulators/         # Virtual simulation & Plotting logic
-│   └── utils/              # I/O, Geometry, and Transformations
-├── videos/                 # Output folder for recordings
-├── requirements.txt
-└── setup.py
 ```
 
 ---
 
 ## 🎮 Quick Start
 
-To run your first simulation, navigate to the `examples` folder.
+Run the basic simulation example:
 
-**File:** `examples/basic_simulation.py`
-
-```python
-import sys
-from pathlib import Path
-import numpy as np
-
-# Add project root to path (if not installed via pip -e .)
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
-
-# --- NEW IMPORTS ---
-from testbed import VirtualTestbed
-from testbed.utils import io, geometry
-import testbed.control.controllers as ctrl
-
-# 1. Load Data
-file_path = 'data/trajectories/data_7v_7N.mat'
-load_pos = io.load_data_matlab(str(project_root / file_path), split_data=10)
-initial_conditions = load_pos(0)[:, :3]
-
-# 2. Initialize Virtual Environment
-env = VirtualTestbed(number_of_robots=3, show_figure=True, initial_conditions=initial_conditions)
-
-# 3. Create Controller
-controller = ctrl.create_pid_unicycle_pose_controller(num_robots=3)
-
-# 4. Loop
-x = env.get_poses()
-env.step()
-
-while True:
-    x = env.get_poses()
-    goals = load_pos(0)[:, :3]
-    
-    # Compute control
-    dxu = controller(x, goals)
-    
-    # Apply velocities
-    env.set_velocities(np.arange(3), dxu)
-    env.step()
-```
-
-**Run it via terminal:**
 ```bash
 python3 examples/basic_simulation.py
 ```
 
----
+```python
+# Code snippet example
+from testbed import VirtualTestbed
+from testbed.utils import io
+import testbed.control.controllers as ctrl
 
-## ⚙️ Configuration
+# Load Data & Init
+load_pos = io.load_data_matlab('data/trajectories/data_7v_7N.mat', split_data=10)
+env = VirtualTestbed(number_of_robots=3, show_figure=True, initial_conditions=load_pos(0))
 
-Global settings are managed in **`testbed/config/settings.py`**. You can modify:
-
-*   **Robot Parameters**: Size, wheel radius, max velocity.
-*   **Arena**: Boundaries (`[x_min, x_max, y_min, y_max]`).
-*   **Vision**: Camera ID, Resolution, Marker size.
-*   **Communication**: Serial ports (COM4/ttyUSB0) and baudrate.
+# Control Loop
+while True:
+    env.set_velocities(range(3), controller(env.get_poses(), goals))
+    env.step()
+```
 
 ---
 
 ## 🔧 Hardware Setup
 
-If you are deploying to real robots using `RealTestbed`:
+To build the physical testbed, you need the following setup:
 
-1.  **Camera**: Ensure your camera calibration files (`cameraMatrix.txt`, `cameraDistortion.txt`) are in `config/camera/`.
-2.  **Serial Port**: Check your USB connection.
-    *   *Linux*: `/dev/ttyUSB0` (Remember to grant permissions: `sudo chmod 666 /dev/ttyUSB0`).
-    *   *Windows*: `COM3` or `COM4`.
-3.  **Markers**: Use the ArUco dictionary `DICT_4X4_100`.
+<p align="center">
+  <!-- PON UNA FOTO DE TU SETUP COMPLETO (CAMARA + ARENA) AQUI -->
+  <img src="assets/images/hardware_setup.jpg" alt="Hardware Setup" width="600"/>
+</p>
 
----
+1.  **Camera**: Mounted overhead (check `config/camera/` for calibration).
+2.  **Robots**: Differential drive robots equipped with **ESP8266** for WiFi/Serial communication.
+3.  **Markers**: Print ArUco markers (`DICT_4X4_100`) from `assets/markers/`.
 
-## 🐛 Troubleshooting
-
-*   **`ModuleNotFoundError: No module named 'testbed'`**:
-    *   Ensure you ran `pip install -e .` in the root directory.
-    *   Or ensure your script adds the parent directory to `sys.path`.
-
-*   **`FileNotFoundError: ... data_7v_7N.mat`**:
-    *   Ensure you are running the script from the correct directory or using absolute paths (as shown in `basic_simulation.py`).
+### Robot Detail
+<p align="center">
+  <!-- PON UNA FOTO PRIMER PLANO DE UN ROBOT AQUI -->
+  <img src="assets/images/robot_detail.jpg" alt="Robot Detail" width="400"/>
+</p>
 
 ---
 
@@ -210,55 +139,65 @@ If you use this platform, please cite:
 
 Un framework completo en Python para simular y desplegar sistemas de control multi-robot, con seguimiento visual en tiempo real mediante marcadores ArUco.
 
-### 🎯 Características
+### 🎯 Características Principales
 
 - **🤖 Modos Duales**: Cambio transparente entre Simulación Virtual y Hardware Real.
 - **👁️ Visión Artificial**: Estimación de pose en tiempo real usando ArUco y OpenCV.
-- **🎮 Arquitectura Modular**: Separación limpia entre lógica central (`core`), hardware (`hardware`), utilidades (`utils`) y control.
 - **🛡️ Seguridad**: Certificados de barrera (Barrier Certificates) para evitar colisiones.
-- **📈 Seguimiento de Trayectorias**: Carga datos de MATLAB (`.mat`) y sigue rutas complejas.
-- **🎥 Grabación**: Sistema automático de grabación de experimentos.
 
-### 📋 Tabla de Contenidos
+### 📸 Galería: Virtual vs. Real
+
+| Simulación Virtual | Implementación Real |
+|:------------------:|:-------------------:|
+| <!-- USA LA MISMA RUTA QUE ARRIBA --> <img src="assets/images/virtual_sim.gif" alt="Simulacion" width="400"/> | <!-- USA LA MISMA RUTA QUE ARRIBA --> <img src="assets/images/real_robot.gif" alt="Real" width="400"/> |
+| *Simulador 2D ligero en Python* | *Robots diferenciales con marcadores ArUco* |
+
+### 📋 Contenido
 
 - [Instalación](#instalación)
-- [Estructura del Proyecto](#estructura-del-proyecto)
 - [Inicio Rápido](#inicio-rápido)
-- [Configuración](#configuración)
-- [Hardware](#configuración-de-hardware)
+- [Configuración de Hardware](#configuración-de-hardware)
 
 ---
 
 ## 🚀 Instalación
 
-### Requisitos
-
-- Python 3.10+, pip, Git.
-
-### Pasos
-
 1. **Clonar repositorio**:
 ```bash
-git clone https://github.com/niospinag/testbed.git
+git clone https://github.com/tuusuario/testbed.git
 cd testbed
 ```
 
-2. **Entorno Virtual**:
-```bash
-python3 -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-```
-
-3. **Instalar dependencias**:
+2. **Instalar dependencias y el paquete**:
 ```bash
 pip install -r requirements.txt
-```
-
-4. **Instalar el paquete en modo "Editable" (Recomendado)**:
-   *Esto permite importar `testbed` desde cualquier lugar sin romper las rutas.*
-```bash
 pip install -e .
 ```
+
+---
+
+## 🎮 Inicio Rápido
+
+Para correr una simulación, usa el script en la carpeta `examples`.
+
+```bash
+python3 examples/basic_simulation.py
+```
+
+---
+
+## 🔧 Configuración de Hardware
+
+Para replicar el sistema físico necesitas:
+
+<p align="center">
+  <!-- USA LA MISMA FOTO DEL SETUP QUE ARRIBA -->
+  <img src="assets/images/hardware_setup.jpg" alt="Montaje Hardware" width="600"/>
+</p>
+
+1.  **Cámara**: Montada cenitalmente (revisar `config/camera/` para calibración).
+2.  **Robots**: Robots diferenciales equipados con **ESP8266**.
+3.  **Marcadores**: Imprimir marcadores de `assets/markers/`.
 
 ---
 
@@ -268,83 +207,19 @@ El proyecto ha sido refactorizado para ser modular:
 
 ```text
 Testbed/
-├── assets/                 # Marcadores y recursos
+├── assets/                 # Marcadores e Imágenes
 ├── config/                 # Calibración de cámara
-├── data/                   # Trayectorias (.mat) y Resultados
-├── examples/               # Scripts ejecutables (¡Empieza aquí!)
-│   ├── basic_simulation.py # Ejemplo principal
-│   └── ...
+├── data/                   # Trayectorias (.mat)
+├── examples/               # Scripts ejecutables
 ├── testbed/                # PAQUETE PRINCIPAL
-│   ├── config/             # Configuración global (settings.py)
+│   ├── config/             # Configuración global
 │   ├── control/            # Controladores y Barreras
-│   ├── core/               # Clases base y Robot
+│   ├── core/               # Clases base
 │   ├── hardware/           # Interfaz Real y Visión
-│   ├── simulators/         # Simulador Virtual y Gráficos
-│   └── utils/              # I/O, Geometría y Transformaciones
-├── videos/                 # Salida de videos
+│   ├── simulators/         # Simulador Virtual
+│   └── utils/              # I/O y Geometría
 └── setup.py
 ```
-
----
-
-## 🎮 Inicio Rápido
-
-Para correr una simulación, usa el script en la carpeta `examples`.
-
-**Ejecutar:**
-```bash
-python3 examples/basic_simulation.py
-```
-
-**Ejemplo de Código (Resumido):**
-
-```python
-from testbed import VirtualTestbed
-from testbed.utils import io, geometry
-import testbed.control.controllers as ctrl
-
-# 1. Cargar Datos
-load_pos = io.load_data_matlab('data/trajectories/data_7v_7N.mat', split_data=10)
-initial_conditions = load_pos(0)[:, :3]
-
-# 2. Iniciar Simulador
-env = VirtualTestbed(number_of_robots=3, show_figure=True, initial_conditions=initial_conditions)
-
-# 3. Controlador
-controller = ctrl.create_pid_unicycle_pose_controller(num_robots=3)
-
-# 4. Bucle
-while True:
-    x = env.get_poses()
-    dxu = controller(x, metas)
-    env.set_velocities(range(3), dxu)
-    env.step()
-```
-
----
-
-## ⚙️ Configuración
-
-Toda la configuración del sistema se centraliza en **`testbed/config/settings.py`**.
-Aquí puedes ajustar:
-
-*   **Física del Robot**: Radio de rueda, velocidad máxima.
-*   **Arena**: Límites del espacio de trabajo.
-*   **Visión**: ID de cámara (0, 1, 2), resolución.
-*   **Comunicación**: Puertos seriales (`COM4`, `/dev/ttyUSB0`).
-
----
-
-## 🔧 Configuración de Hardware
-
-Si vas a usar el **`RealTestbed`**:
-
-1.  **Cámara**: Asegúrate de tener los archivos `cameraMatrix.txt` y `cameraDistortion.txt` en `config/camera/`.
-2.  **Permisos (Linux)**:
-    ```bash
-    sudo chmod 666 /dev/ttyUSB0
-    ```
-3.  **Marcadores**: Imprime los marcadores de `assets/markers/`.
 
 ---
 
