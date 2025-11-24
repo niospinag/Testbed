@@ -7,40 +7,21 @@ import cv2
 import time
 from typing import Optional
 
-from core.base_testbed import BaseTestbed
-from core.robot import Robot, RobotParameters
-from hardware.vision import VisionSystem
-from hardware.communication import SerialCommunicator, MultiSerialCommunicator
-from config.settings import TestbedConfig
-import utilities.controllers as ctrl
-import utilities.misc as misc
-
-
-import numpy as np
-import cv2
-import time
-from typing import Optional
-
-# --- CORRECCIONES DE RUTAS ---
-
-# 1. Usar la ruta completa del paquete para 'core'
+# --- IMPORTS DEL CORE ---
 from testbed.core.base_testbed import BaseTestbed
-# Nota: Si no tienes el archivo robot.py en core, comenta la siguiente línea:
-from testbed.core.base_testbed import Robot, RobotParameters 
+from testbed.core.robot import Robot, RobotParameters
 
-# 2. Import relativo para 'vision' (porque está en la misma carpeta hardware)
-from .vision import VisionSystem
+# --- IMPORTS DE HARDWARE (Relativos) ---
+# VisionSystem está en vision.py, no en base_testbed
+from testbed.core.base_testbed import VisionSystem
+from .communication import SerialCommunicator, MultiSerialCommunicator
 
-# 3. Importar comunicación (OJO: Verifica si communication.py existe en tu carpeta hardware)
-# from .communication import SerialCommunicator, MultiSerialCommunicator 
+# --- CONFIGURACIÓN ---
+from testbed.config.settings import TestbedConfig
 
-# 4. Configuración (OJO: Verifica si settings.py existe en testbed/config)
-# from testbed.config.settings import TestbedConfig
-
-# 5. Controladores y utilidades (Rutas nuevas)
+# --- UTILIDADES ---
 import testbed.control.controllers as ctrl
-import testbed.utils.geometry as geometry # Reemplaza a misc
-# -----------------------------
+import testbed.utils.geometry as geometry
 
 
 
@@ -354,7 +335,7 @@ class RealTestbed(BaseTestbed):
 # Example usage
 # ==========================================
 if __name__ == "__main__":
-    import utilities.controllers as ctrl
+    import testbed.control.controllers as ctrl
     
     # Configuration
     N = 3  # Number of robots

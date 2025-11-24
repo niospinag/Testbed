@@ -2,7 +2,7 @@ import cv2
 import cv2.aruco as aruco
 import numpy as np
 import os
-import utilities.misc as msc
+import testbed.utils.geometry as msc
 import sys
 
 

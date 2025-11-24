@@ -63,7 +63,7 @@ def create_si_position_controller(x_velocity_gain=10, y_velocity_gain=10, veloci
     return si_position_controller
 
 def create_clf_unicycle_position_controller(linear_velocity_gain=0.8, angular_velocity_gain=3):
-    """Creates a unicycle model pose controller.  Drives the unicycle model to a given position
+    r"""Creates a unicycle model pose controller.  Drives the unicycle model to a given position
     and orientation. (($u: \mathbf{R}^{3 \times N} \times \mathbf{R}^{2 \times N} \to \mathbf{R}^{2 \times N}$)
 
     linear_velocity_gain - the gain impacting the produced unicycle linear velocity
@@ -83,7 +83,7 @@ def create_clf_unicycle_position_controller(linear_velocity_gain=0.8, angular_ve
 
     def position_uni_clf_controller(states, positions):
 
-        """  A position controller for unicycle models.  This utilized a control lyapunov function
+        r"""  A position controller for unicycle models.  This utilized a control lyapunov function
         (CLF) to drive a unicycle system to a desired position. This function operates on unicycle
         states and desired positions to return a unicycle velocity command vector.
 
@@ -118,7 +118,7 @@ def create_clf_unicycle_position_controller(linear_velocity_gain=0.8, angular_ve
     return position_uni_clf_controller
 
 def create_clf_unicycle_pose_controller(approach_angle_gain=1, desired_angle_gain=2.7, rotation_error_gain=1):
-    """Returns a controller ($u: \mathbf{R}^{3 \times N} \times \mathbf{R}^{3 \times N} \to \mathbf{R}^{2 \times N}$) 
+    r"""Returns a controller ($u: \mathbf{R}^{3 \times N} \times \mathbf{R}^{3 \times N} \to \mathbf{R}^{2 \times N}$) 
     that will drive a unicycle-modeled agent to a pose (i.e., position & orientation). This control is based on a control
     Lyapunov function.
 

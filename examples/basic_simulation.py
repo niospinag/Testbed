@@ -28,7 +28,10 @@ data_name = 'data_7v_7N' # Name of the data file
 split_data = 10         # Interpolation factor for points
 
 # Define the correct path to the .mat file (based on your tree it is in data/trajectories)
-file_path = f'data/trajectories/{data_name}.mat'
+# file_path = f'data/trajectories/{data_name}.mat'
+file_path = project_root / 'data' / 'trajectories' / f'{data_name}.mat'
+file_path = str(file_path)
+
 
 # Load data (Using 'io' module instead of 'misc')
 print(f"Loading trajectory from: {file_path}")
