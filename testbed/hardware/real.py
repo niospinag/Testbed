@@ -1,6 +1,4 @@
-# ==========================================
-# FILE: testbed/real_testbed.py
-# ==========================================
+
 """
 Real hardware testbed implementation with vision tracking and serial communication.
 """
@@ -16,6 +14,34 @@ from hardware.communication import SerialCommunicator, MultiSerialCommunicator
 from config.settings import TestbedConfig
 import utilities.controllers as ctrl
 import utilities.misc as misc
+
+
+import numpy as np
+import cv2
+import time
+from typing import Optional
+
+# --- CORRECCIONES DE RUTAS ---
+
+# 1. Usar la ruta completa del paquete para 'core'
+from testbed.core.base_testbed import BaseTestbed
+# Nota: Si no tienes el archivo robot.py en core, comenta la siguiente línea:
+from testbed.core.base_testbed import Robot, RobotParameters 
+
+# 2. Import relativo para 'vision' (porque está en la misma carpeta hardware)
+from .vision import VisionSystem
+
+# 3. Importar comunicación (OJO: Verifica si communication.py existe en tu carpeta hardware)
+# from .communication import SerialCommunicator, MultiSerialCommunicator 
+
+# 4. Configuración (OJO: Verifica si settings.py existe en testbed/config)
+# from testbed.config.settings import TestbedConfig
+
+# 5. Controladores y utilidades (Rutas nuevas)
+import testbed.control.controllers as ctrl
+import testbed.utils.geometry as geometry # Reemplaza a misc
+# -----------------------------
+
 
 
 class RealTestbed(BaseTestbed):

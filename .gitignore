@@ -8,8 +8,6 @@ env/
 venv/
 
 # Data
-*.mat
-*.csv
 *.avi
 *.mp4
 

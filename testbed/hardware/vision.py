@@ -6,6 +6,8 @@ import utilities.misc as msc
 import sys
 
 
+
+
 def getCameraMatr(path, width=3, height=4, nameMatrix="cameraMatrix.txt", nameDistorcion="cameraDistortion.txt"):
     """
     :param path: folder where the matrices are located

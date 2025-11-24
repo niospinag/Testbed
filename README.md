@@ -470,10 +470,10 @@ If you use this testbed in your research, please cite:
 
 ## 📧 Contact & Support
 
-- **Author**: Your Name
-- **Email**: your.email@example.com
-- **Issues**: [GitHub Issues](https://github.com/yourusername/testbed/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/testbed/discussions)
+- **Author**: Nestor Ivan Ospina Gaitan
+- **Email**: niospinag@unal.edu.co
+- **Issues**: [GitHub Issues](https://github.com/niospinag/testbed/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/niospinag/testbed/discussions)
 
 ---
 
@@ -766,9 +766,9 @@ sudo chmod 666 /dev/ttyUSB0
 
 ## 📧 Contacto y Soporte
 
-- **Autor**: Tu Nombre
-- **Email**: tu.email@ejemplo.com
-- **Problemas**: [GitHub Issues](https://github.com/tuusuario/testbed/issues)
+- **Autor**: Nestor Ivan Ospina Gaitan
+- **Email**: niospinag@unal.edu.co
+- **Problemas**: [GitHub Issues](https://github.com/niospinag/testbed/issues)
 
 ---
 

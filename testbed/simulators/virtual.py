@@ -2,19 +2,19 @@
 import time
 import math
 # from abc import ABC, abstractmethod
-import plotlab as plb
+from . import plotlab as plb 
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
-import utilities.misc as misc
+from testbed.utils import geometry
 
 # TestbedABC: This is an interface for the Testbed class that
 # ensures the simulator and the robots match up properly.  
 
 # THIS FILE SHOULD NEVER BE MODIFIED OR SUBMITTED!
 
-class Testbed():
+class VirtualTestbed():
 
     def __init__(self, number_of_robots=-1, show_figure=True, sim_in_real_time=True, initial_conditions=np.array([])):
 
