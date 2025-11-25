@@ -28,7 +28,7 @@ A comprehensive Python framework for simulating and deploying multi-robot contro
 
 | Robot Fleet | Real-World Experiment |
 |:-----------:|:---------------------:|
-| <!-- FOTO DEL GRUPO DE ROBOTS JUNTOS --> <img src="assets/images/robot_swarm.jpg" alt="Robot Swarm" width="400"/> | <!-- SCREENSHOT DE LA PRUEBA CORRIENDO --> <img src="assets/images/real_test_screenshot.jpg" alt="Real Experiment" width="400"/> |
+| <!-- FOTO DEL GRUPO DE ROBOTS JUNTOS --> <img src="assets/images/robots.jpg" alt="Robot Swarm" width="400"/> | <!-- SCREENSHOT DE LA PRUEBA CORRIENDO --> <img src="assets/images/rel_test.png" alt="Real Experiment" width="400"/> |
 | *Differential drive robots equipped with ESP8266* | *Real-time vision tracking and control execution* |
 
 ### 📋 Table of Contents
@@ -145,12 +145,13 @@ Un framework completo en Python para simular y desplegar sistemas de control mul
 - **👁️ Visión Artificial**: Estimación de pose en tiempo real usando ArUco y OpenCV.
 - **🛡️ Seguridad**: Certificados de barrera (Barrier Certificates) para evitar colisiones.
 
-### 📸 Galería: Virtual vs. Real
+## 📸 Galería del Sistema
 
-| Simulación Virtual | Implementación Real |
-|:------------------:|:-------------------:|
-| <!-- USA LA MISMA RUTA QUE ARRIBA --> <img src="assets/images/virtual_sim.gif" alt="Simulacion" width="400"/> | <!-- USA LA MISMA RUTA QUE ARRIBA --> <img src="assets/images/real_robot.gif" alt="Real" width="400"/> |
-| *Simulador 2D ligero en Python* | *Robots diferenciales con marcadores ArUco* |
+| Flota de Robots | Prueba en Hardware Real |
+|:---------------:|:-----------------------:|
+| <!-- USA LA MISMA RUTA DE LA FOTO DEL GRUPO --> <img src="assets/images/robots.jpg" alt="Flota de Robots" width="400"/> | <!-- USA LA MISMA RUTA DEL SCREENSHOT --> <img src="assets/images/rel_test.png" alt="Prueba Real" width="400"/> |
+| *Robots diferenciales equipados con ESP8266* | *Seguimiento visual y control en tiempo real* |
+
 
 ### 📋 Contenido
 
