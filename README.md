@@ -24,12 +24,12 @@ A comprehensive Python framework for simulating and deploying multi-robot contro
 - **🛡️ Safety Mechanisms**: Barrier certificates for collision avoidance.
 - **📈 Trajectory Tracking**: Load and follow predefined paths from MATLAB (`.mat`) data.
 
-### 📸 Gallery: Virtual vs. Real
+### 📸 Platform Showcase
 
-| Virtual Simulation | Real Hardware Implementation |
-|:------------------:|:----------------------------:|
-| <!-- PON TU GIF DEL SIMULADOR AQUI --> <img src="assets/images/virtual_sim.gif" alt="Virtual Simulation" width="400"/> | <!-- PON TU GIF DEL ROBOT REAL AQUI --> <img src="assets/images/real_robot.gif" alt="Real Robots" width="400"/> |
-| *Gazebo-like 2D Python Simulator* | *Differential drive robots with ArUco markers* |
+| Robot Fleet | Real-World Experiment |
+|:-----------:|:---------------------:|
+| <!-- FOTO DEL GRUPO DE ROBOTS JUNTOS --> <img src="assets/images/robot_swarm.jpg" alt="Robot Swarm" width="400"/> | <!-- SCREENSHOT DE LA PRUEBA CORRIENDO --> <img src="assets/images/real_test_screenshot.jpg" alt="Real Experiment" width="400"/> |
+| *Differential drive robots equipped with ESP8266* | *Real-time vision tracking and control execution* |
 
 ### 📋 Table of Contents
 
