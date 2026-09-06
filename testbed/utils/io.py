@@ -1,74 +1,58 @@
-
+from __future__ import annotations
 
 import numpy as np
 import scipy.io as spio
 
 
+def load_data_matlab(
+    filename: str,
+    split_data: int = 0,
+    shift_x: float = -200,
+    scale_x: float = 1.3,
+    shift_y: float = -85,
+    scale_y: float = 30,
+):
+    """Load trajectory data from MATLAB and return a position callback."""
+    if not isinstance(filename, str):
+        raise TypeError("filename must be a string")
+    if not isinstance(split_data, int):
+        raise TypeError("split_data must be an integer")
+    if split_data < 0:
+        raise ValueError("split_data must be >= 0")
 
-
-def load_data_matlab(filename='', split_data=0,  shift_x=-200, scale_x=1.3, shift_y=-85, scale_y=30):
-    '''
-    Generate a function with the goal path.
-    Args:
-        filename: name of the .mat file to be loaded
-        split_data: number of points between each iteration
-
-    Returns:
-        position: function to give a desired point in the loaded path
-    '''
-    assert isinstance(filename, str), "In the load_data_matlab function, the argument must be an string with the name of the file that containts the .mat file. Recieved type %r." % type(filename).__name__
-    assert isinstance(split_data, int), "In the load_data_matlab function, the argument must be an integer with the number of the subdata needed between 2 points. Recieved type %r." % type(filename).__name__
-
-    # mat = spio.loadmat('myData.mat', squeeze_me=True)
     mat = spio.loadmat(filename, squeeze_me=True)
+    hist_pos = np.asarray(mat["hist_pos"], dtype=float)
+    zhist = np.asarray(mat["zhist"], dtype=float)
 
-    vhist = mat['vhist']  # structures need [()]
-    vphist = mat['vphist']
-    hist_pos = mat['hist_pos']
-    zhist = mat['zhist']
-    # zhist.astype=(float)
-    # zphist = mat['zphist'] * scale_y + shift_y
-    print('zhist', zhist.shape)
-    print('hist_pos', hist_pos.shape)
+    if hist_pos.ndim != 2 or zhist.ndim != 2:
+        raise ValueError("hist_pos and zhist must be 2D matrices")
+    if hist_pos.shape != zhist.shape:
+        raise ValueError("hist_pos and zhist must have the same shape")
 
-    # T = mat['T']
-    N = hist_pos.shape[0]
-    horizon = hist_pos.shape[1]
+    n, horizon = hist_pos.shape
 
-    if split_data != 0:
-        x_pos = np.zeros((N, (horizon-1)*split_data))
-        y_pos = np.zeros((N, (horizon-1)*split_data))
-
-        for j in np.arange(0, horizon-1, 1):
-            print(j)
-
-            dty = zhist[:, j+1].astype(float) - zhist[:, j].astype(float)
-            dty = dty / (split_data)
-
-            dtx = (hist_pos[:, j+1] - hist_pos[:, j]) / split_data
-            # print('dty',dty)
-
+    if split_data > 0 and horizon > 1:
+        x_pos = np.zeros((n, (horizon - 1) * split_data), dtype=float)
+        y_pos = np.zeros((n, (horizon - 1) * split_data), dtype=float)
+        for j in range(horizon - 1):
+            dtx = (hist_pos[:, j + 1] - hist_pos[:, j]) / split_data
+            dty = (zhist[:, j + 1] - zhist[:, j]) / split_data
             for k in range(split_data):
-                x_pos[:, j*split_data + k] = hist_pos[:, j] + k*dtx
-                y_pos[:, j*split_data + k] = zhist[:, j] + k*dty
-
-                # print(f'x_pos {j*split_data + k}', x_pos[ag, j*split_data + k] )
-                # print(f'y_pos {j*split_data + k}', y_pos[ag, j*split_data + k] )
-        # print(x_pos.shape, y_pos.shape)
-        # print(x_pos[:,200:])
-
+                x_pos[:, j * split_data + k] = hist_pos[:, j] + k * dtx
+                y_pos[:, j * split_data + k] = zhist[:, j] + k * dty
     else:
         x_pos = hist_pos
         y_pos = zhist
-        print(x_pos.shape, y_pos.shape)
 
-    def position(i):
-        # pos = [x_pos[:, i]*scale_x + shift_x,  y_pos[:, i]*scale_y+shift_y, np.zeros((6))]
-        pos = np.array([x_pos[:, i]*scale_x + shift_x,
-                       y_pos[:, i]*scale_y+shift_y, np.zeros((N))])
-        print('pos', pos)
-        return pos
-
+    def position(i: int) -> np.ndarray:
+        if i < 0 or i >= x_pos.shape[1]:
+            raise IndexError("trajectory index out of range")
+        return np.array(
+            [
+                x_pos[:, i] * scale_x + shift_x,
+                y_pos[:, i] * scale_y + shift_y,
+                np.zeros((n,), dtype=float),
+            ]
+        )
 
     return position
-

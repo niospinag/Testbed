@@ -1,4 +1,9 @@
 from .simulators.virtual import VirtualTestbed
-from .hardware.real import RealTestbed
 
-__all__ = ["VirtualTestbed", "RealTestbed"]
+__all__ = ["VirtualTestbed"]
+
+try:
+    from .hardware.real import RealTestbed
+    __all__.append("RealTestbed")
+except Exception:
+    RealTestbed = None
